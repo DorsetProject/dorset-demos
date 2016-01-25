@@ -34,7 +34,7 @@ public class Demo {
         jettyServer.setHandler(context);
         ServletHolder jerseyServlet = context.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/*");
         jerseyServlet.setInitOrder(0);
-        jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", EchoResource.class.getCanonicalName());
+        jerseyServlet.setInitParameter("javax.ws.rs.Application", WebServiceConfig.class.getCanonicalName());
 
         try {
             jettyServer.start();
