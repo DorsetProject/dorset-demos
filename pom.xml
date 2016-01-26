@@ -3,21 +3,23 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>edu.jhuapl.dorset</groupId>
-  <artifactId>dorset-demo</artifactId>
+  <artifactId>dorset-demos</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>war</packaging>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>1.7</jdk.version>
     <jetty.version>9.2.13.v20150730</jetty.version>
+    <dorset.version>0.1-SNAPSHOT</dorset.version>
   </properties>
 
   <name>Dorset Demo</name>
-  <description>Demonstration of the Dorset framework</description>
-  <url>https://github.com/DorsetProject/dorset_demo</url>
+  <description>Demonstrations of the Dorset framework</description>
+  <url>https://github.com/DorsetProject/dorset-demos</url>
   <issueManagement>
     <system>Github</system>
-    <url>https://github.com/DorsetProject/dorset_demo/issues</url>
+    <url>https://github.com/DorsetProject/dorset-demos/issues</url>
   </issueManagement>
   <licenses>
     <license>
@@ -34,8 +36,8 @@
   <dependencies>
     <dependency>
       <groupId>edu.jhuapl.dorset</groupId>
-      <artifactId>dorset-framework</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <artifactId>dorset-api</artifactId>
+      <version>${dorset.version}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>

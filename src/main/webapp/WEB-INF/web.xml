@@ -14,4 +14,7 @@
     <servlet-name>dorset</servlet-name>
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
+  <listener>
+    <listener-class>edu.jhuapl.dorset.demo.AppInitializer</listener-class>
+  </listener>
 </web-app>
