@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>edu.jhuapl.dorset.demos</groupId>
+    <artifactId>dorset-demos</artifactId>
+    <version>0.1-SNAPSHOT</version>
+  </parent>
+
+  <groupId>edu.jhuapl.dorset.demos</groupId>
+  <artifactId>server</artifactId>
+  <packaging>war</packaging>
+  <name>server</name>
+  <description>A JSON web service server</description>
+
+  <properties>
+    <jetty.version>9.2.13.v20150730</jetty.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>edu.jhuapl.dorset</groupId>
+      <artifactId>dorset-api</artifactId>
+      <version>${dorset.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+  </dependencies>
+
+</project>

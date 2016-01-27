@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.jhuapl.dorset.demo;
+package edu.jhuapl.dorset.demos;
 
 import java.util.Properties;
 
@@ -22,8 +22,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import edu.jhuapl.dorset.Application;
-import edu.jhuapl.dorset.UltimateAgent;
 import edu.jhuapl.dorset.agent.AgentRegistry;
+import edu.jhuapl.dorset.demos.UltimateAgent;
 import edu.jhuapl.dorset.routing.FixedAgentRouter;
 import edu.jhuapl.dorset.routing.Router;
 

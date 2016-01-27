@@ -2,19 +2,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>edu.jhuapl.dorset</groupId>
+  <groupId>edu.jhuapl.dorset.demos</groupId>
   <artifactId>dorset-demos</artifactId>
   <version>0.1-SNAPSHOT</version>
-  <packaging>war</packaging>
+  <packaging>pom</packaging>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jdk.version>1.7</jdk.version>
-    <jetty.version>9.2.13.v20150730</jetty.version>
-    <dorset.version>0.1-SNAPSHOT</dorset.version>
-  </properties>
-
-  <name>Dorset Demo</name>
+  <name>dorset-demos</name>
   <description>Demonstrations of the Dorset framework</description>
   <url>https://github.com/DorsetProject/dorset-demos</url>
   <issueManagement>
@@ -33,28 +26,17 @@
     <url>http://www.jhuapl.edu/</url>
   </organization>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jdk.version>1.7</jdk.version>
+    <dorset.version>0.1-SNAPSHOT</dorset.version>
+  </properties>
+
+  <modules>
+    <module>server</module>
+  </modules>
+
   <dependencies>
-    <dependency>
-      <groupId>edu.jhuapl.dorset</groupId>
-      <artifactId>dorset-api</artifactId>
-      <version>${dorset.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.7</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>

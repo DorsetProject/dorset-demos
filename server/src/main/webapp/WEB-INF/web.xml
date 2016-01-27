@@ -15,6 +15,6 @@
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
   <listener>
-    <listener-class>edu.jhuapl.dorset.demo.AppInitializer</listener-class>
+    <listener-class>edu.jhuapl.dorset.demos.AppInitializer</listener-class>
   </listener>
 </web-app>
