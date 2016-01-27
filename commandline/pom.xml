@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>edu.jhuapl.dorset.demos</groupId>
+    <artifactId>dorset-demos</artifactId>
+    <version>0.1-SNAPSHOT</version>
+  </parent>
+
+  <groupId>edu.jhuapl.dorset.demos</groupId>
+  <artifactId>commandline</artifactId>
+  <packaging>jar</packaging>
+  <name>Dorset Commandline Demo</name>
+  <description>Commandline implementation of a Dorset application</description>
+
+  <properties>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>edu.jhuapl.dorset</groupId>
+      <artifactId>dorset-core</artifactId>
+      <version>${dorset.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+    </plugins>
+  </build>
+</project>
