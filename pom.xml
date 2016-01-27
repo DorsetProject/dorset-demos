@@ -35,6 +35,7 @@
   <modules>
     <module>server</module>
     <module>commandline</module>
+    <module>web-frontend</module>
   </modules>
 
   <dependencies>
