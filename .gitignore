@@ -11,3 +11,5 @@ target/
 *.jar
 *.war
 *.ear
+
+dependency-reduced-pom.xml
