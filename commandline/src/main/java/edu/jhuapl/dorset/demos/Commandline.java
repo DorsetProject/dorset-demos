@@ -22,6 +22,7 @@ import java.util.Scanner;
 import edu.jhuapl.dorset.Application;
 import edu.jhuapl.dorset.Request;
 import edu.jhuapl.dorset.Response;
+import edu.jhuapl.dorset.agent.Agent;
 import edu.jhuapl.dorset.agent.AgentRegistry;
 import edu.jhuapl.dorset.routing.FixedAgentRouter;
 import edu.jhuapl.dorset.routing.Router;
@@ -32,8 +33,9 @@ public class Commandline {
     public static void main(String[] args) {
         
         AgentRegistry registry = new AgentRegistry();
-        registry.register("test", new TestAgent(), new Properties());
-        Router router = new FixedAgentRouter("test");
+        Agent agent = new TestAgent();
+        registry.register(agent, new Properties());
+        Router router = new FixedAgentRouter(agent.getName());
         Application app = new Application(registry, router);
         
         System.out.println("Welcome to the Dorset command line demo! "

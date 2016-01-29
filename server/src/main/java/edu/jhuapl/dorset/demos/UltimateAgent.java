@@ -16,11 +16,17 @@
  */
 package edu.jhuapl.dorset.demos;
 
-import edu.jhuapl.dorset.agent.Agent;
+import edu.jhuapl.dorset.agent.AgentBase;
 import edu.jhuapl.dorset.agent.AgentRequest;
 import edu.jhuapl.dorset.agent.AgentResponse;
+import edu.jhuapl.dorset.agent.Description;
 
-public class UltimateAgent implements Agent {
+public class UltimateAgent extends AgentBase {
+
+    public UltimateAgent() {
+        this.setName("ultimate");
+        this.setDescription(new Description(name, "Always answers 42", "Why?"));
+    }
 
     @Override
     public AgentResponse process(AgentRequest request) {
