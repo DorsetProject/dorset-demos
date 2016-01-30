@@ -5,13 +5,12 @@
   <parent>
     <groupId>edu.jhuapl.dorset.demos</groupId>
     <artifactId>dorset-demos</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>edu.jhuapl.dorset.demos</groupId>
   <artifactId>server</artifactId>
   <packaging>war</packaging>
-  <name>server</name>
+  <name>Dorset API Demo Server</name>
   <description>A JSON web service server</description>
 
   <properties>

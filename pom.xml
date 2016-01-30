@@ -4,10 +4,10 @@
 
   <groupId>edu.jhuapl.dorset.demos</groupId>
   <artifactId>dorset-demos</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>dorset-demos</name>
+  <name>Dorset Demos</name>
   <description>Demonstrations of the Dorset framework</description>
   <url>https://github.com/DorsetProject/dorset-demos</url>
   <issueManagement>
@@ -29,7 +29,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>1.7</jdk.version>
-    <dorset.version>0.1-SNAPSHOT</dorset.version>
+    <dorset.version>0.1.0-SNAPSHOT</dorset.version>
   </properties>
 
   <modules>
