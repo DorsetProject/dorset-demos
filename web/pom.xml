@@ -8,10 +8,10 @@
     <version>0.1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>server</artifactId>
+  <artifactId>web</artifactId>
   <packaging>war</packaging>
-  <name>Dorset API Demo Server</name>
-  <description>A JSON web service server</description>
+  <name>Dorset Web Demo</name>
+  <description>A web demonstration of the dorset framework</description>
 
   <properties>
     <jetty.version>9.2.13.v20150730</jetty.version>
