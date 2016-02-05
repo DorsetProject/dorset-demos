@@ -16,8 +16,7 @@
  */
  
  function submitQuestion() {
-     var input = document.getElementById('questionInputId').value;
-     console.log("The question asked was: " + input);
+     var input = document.getElementById('question-input-id').value;
      sendGet(input);
  }
 
@@ -31,14 +30,10 @@
          url: "api/process/" + question,
          dataType: 'json',
          success: function(response) {
-             console.log("Success!");
-             console.log("The answer to the question is: " + response.text);
-             document.getElementById('answerOutputId').value = response.text;
+             document.getElementById('answer-output-id').value = response.text;
 
          },
          error: function(e) {
-             console.log("AJAX error");
-             console.log(e);
          }
      });
  }
