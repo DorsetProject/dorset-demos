@@ -14,6 +14,7 @@
   <servlet-mapping>
     <servlet-name>dorset</servlet-name>
     <url-pattern>/api/*</url-pattern>
+    <resources mapping="/resources/**" location="/resources/" /> 
   </servlet-mapping>
   <listener>
     <listener-class>edu.jhuapl.dorset.demos.AppInitializer</listener-class>

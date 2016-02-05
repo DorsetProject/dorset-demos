@@ -1,0 +1,18 @@
+#background {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: url('blueprint.jpg') no-repeat center top scroll;
+    /*Creative Commons Zero (CC0) license (from www.pexels.com)*/
+    opacity: 1;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+.panel-transparent {
+    background: rgba(255, 255, 255, 0.65)!important;
+}
+.padding {
+    padding-top: 10%;
+}
