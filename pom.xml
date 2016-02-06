@@ -53,4 +53,10 @@
       </plugin>
     </plugins>
   </build>
+
+  <scm>
+    <connection>scm:git:git@github.com:DorsetProject/dorset-demos.git</connection>
+    <developerConnection>scm:git:git@github.com:DorsetProject/dorset-demos.git</developerConnection>
+    <url>https://github.com/DorsetProject/dorset-demos</url>
+  </scm>
 </project>
