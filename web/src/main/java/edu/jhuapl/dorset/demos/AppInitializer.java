@@ -25,7 +25,7 @@ import edu.jhuapl.dorset.Application;
 import edu.jhuapl.dorset.agent.Agent;
 import edu.jhuapl.dorset.agent.AgentRegistry;
 import edu.jhuapl.dorset.demos.UltimateAgent;
-import edu.jhuapl.dorset.routing.FixedAgentRouter;
+import edu.jhuapl.dorset.routing.SingleAgentRouter;
 import edu.jhuapl.dorset.routing.Router;
 
 public class AppInitializer implements ServletContextListener {
@@ -39,7 +39,7 @@ public class AppInitializer implements ServletContextListener {
         AgentRegistry registry = new AgentRegistry();
         Agent agent = new UltimateAgent();
         registry.register(agent, new Properties());
-        Router router = new FixedAgentRouter(agent.getName());
+        Router router = new SingleAgentRouter(agent.getName());
         Application.setApplication(new Application(registry, router));
     }
 
