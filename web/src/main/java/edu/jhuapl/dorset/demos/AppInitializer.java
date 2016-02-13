@@ -18,29 +18,38 @@ package edu.jhuapl.dorset.demos;
 
 import java.util.Properties;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
 
 import edu.jhuapl.dorset.Application;
 import edu.jhuapl.dorset.agent.Agent;
 import edu.jhuapl.dorset.agent.AgentRegistry;
-import edu.jhuapl.dorset.demos.UltimateAgent;
-import edu.jhuapl.dorset.routing.SingleAgentRouter;
 import edu.jhuapl.dorset.routing.Router;
+import edu.jhuapl.dorset.routing.SingleAgentRouter;
 
-public class AppInitializer implements ServletContextListener {
+/**
+ * Initialize resources for the Dorset api
+ * 
+ * This uses Jersey's default dependency injection framework.
+ */
+public class AppInitializer extends ResourceConfig {
+    private final Application app;
 
-    @Override
-    public void contextDestroyed(ServletContextEvent event) {
-    }
-
-    @Override
-    public void contextInitialized(ServletContextEvent event) {
+    /**
+     * Create the app and bind it for injection
+     */
+    public AppInitializer() {
         AgentRegistry registry = new AgentRegistry();
         Agent agent = new UltimateAgent();
         registry.register(agent, new Properties());
         Router router = new SingleAgentRouter(agent.getName());
-        Application.setApplication(new Application(registry, router));
-    }
+        app = new Application(registry, router);
 
+        register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(app).to(Application.class);
+            }
+        });
+    }
 }
