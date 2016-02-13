@@ -17,17 +17,18 @@
  
  function submitQuestion() {
      var input = document.getElementById('question-input-id').value;
-     sendGet(input);
+     sendPost(input);
  }
 
- function sendGet(question) {
+ function sendPost(question) {
      $.ajax({
          headers: {
              'Accept': 'application/json',
              'Content-Type': 'application/json'
          },
-         type: "GET",
-         url: "api/process/" + question,
+         type: "POST",
+         url: "api/request",
+         data: JSON.stringify({"text": question}),
          dataType: 'json',
          success: function(response) {
              document.getElementById('answer-output-id').value = response.text;
