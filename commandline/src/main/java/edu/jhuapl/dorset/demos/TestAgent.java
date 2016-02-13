@@ -1,11 +1,11 @@
 package edu.jhuapl.dorset.demos;
 
-import edu.jhuapl.dorset.agent.AgentBase;
+import edu.jhuapl.dorset.agent.AbstractAgent;
 import edu.jhuapl.dorset.agent.AgentRequest;
 import edu.jhuapl.dorset.agent.AgentResponse;
 import edu.jhuapl.dorset.agent.Description;
 
-public class TestAgent extends AgentBase  {
+public class TestAgent extends AbstractAgent  {
 
     public TestAgent() {
         this.setName("test");

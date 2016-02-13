@@ -16,12 +16,12 @@
  */
 package edu.jhuapl.dorset.demos;
 
-import edu.jhuapl.dorset.agent.AgentBase;
+import edu.jhuapl.dorset.agent.AbstractAgent;
 import edu.jhuapl.dorset.agent.AgentRequest;
 import edu.jhuapl.dorset.agent.AgentResponse;
 import edu.jhuapl.dorset.agent.Description;
 
-public class UltimateAgent extends AgentBase {
+public class UltimateAgent extends AbstractAgent {
 
     public UltimateAgent() {
         this.setName("ultimate");
