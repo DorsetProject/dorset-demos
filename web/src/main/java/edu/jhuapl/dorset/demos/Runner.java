@@ -13,6 +13,8 @@ public class Runner {
         WebAppContext context = new WebAppContext();
         context.setServer(server);
         context.setContextPath("/");
+        // turn off class loading from WEB-INF due to logging
+        context.setParentLoaderPriority(true);
 
         ProtectionDomain protectionDomain = Runner.class.getProtectionDomain();
         URL location = protectionDomain.getCodeSource().getLocation();
