@@ -24,8 +24,7 @@ import edu.jhuapl.dorset.agent.Description;
 public class UltimateAgent extends AbstractAgent {
 
     public UltimateAgent() {
-        this.setName("ultimate");
-        this.setDescription(new Description(name, "Always answers 42", "Why?"));
+        this.setDescription(new Description("ultimate", "Always answers 42", "Why?"));
     }
 
     @Override

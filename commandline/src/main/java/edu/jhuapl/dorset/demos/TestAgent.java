@@ -8,8 +8,7 @@ import edu.jhuapl.dorset.agent.Description;
 public class TestAgent extends AbstractAgent  {
 
     public TestAgent() {
-        this.setName("test");
-        this.setDescription(new Description(name, "Test agent", "Where am I?"));
+        this.setDescription(new Description("test", "Test agent", "Where am I?"));
     }
 
     @Override
