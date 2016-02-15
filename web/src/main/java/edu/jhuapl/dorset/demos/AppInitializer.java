@@ -51,5 +51,8 @@ public class AppInitializer extends ResourceConfig {
                 bind(app).to(Application.class);
             }
         });
+
+        // uncomment for logging requests and responses at the INFO level
+        //registerInstances(new LoggingFilter(Logger.getLogger("org.glassfish.jersey"), true));
     }
 }
