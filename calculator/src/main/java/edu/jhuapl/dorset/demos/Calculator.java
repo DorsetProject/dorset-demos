@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016 The Johns Hopkins University Applied Physics Laboratory LLC
  * All rights reserved.
  *
@@ -42,7 +42,7 @@ public class Calculator {
         System.out.println("Welcome to the Dorset calculator demo. "
                 + "Enter mathematical expressions or press 'q' to end this session.\n");
 
-        String input = ""; 
+        String input = "";
         Scanner in = new Scanner(System.in);
 
         while (true) {
@@ -65,5 +65,5 @@ public class Calculator {
         System.out.println("\nThank you for using the calculator.");
         in.close();
     }
-  
+
 }
