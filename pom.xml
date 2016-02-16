@@ -33,7 +33,7 @@
   </properties>
 
   <modules>
-    <module>commandline</module>
+    <module>calculator</module>
     <module>web</module>
   </modules>
 
