@@ -14,27 +14,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- function submitQuestion() {
-     var input = document.getElementById('question-input-id').value;
-     sendPost(input);
- }
+$(document).ready(function() {
+    $("#text-input-type-rb").prop("checked", true);
 
- function sendPost(question) {
-     $.ajax({
-         headers: {
-             'Accept': 'application/json',
-             'Content-Type': 'application/json'
-         },
-         type: "POST",
-         url: "api/request",
-         data: JSON.stringify({"text": question}),
-         dataType: 'json',
-         success: function(response) {
-             document.getElementById('answer-output-id').value = response.text;
+    $("input[name='text']").change(function() {
+        $("#speech-input-type-rb").prop("checked", false);
+    });
 
-         },
-         error: function(e) {
-         }
-     });
- }
+    $("input[name='speech']").change(function() {
+        $("#text-input-type-rb").prop("checked", false);
+    });
+
+    $("#start-button").click(function() {
+        if ($("#text-input-type-rb").is(':checked')) {
+            sendPost($("#question-input-id").val());
+        } else if ($("#speech-input-type-rb").is(':checked')) {
+            runSpeechToText();
+        }
+    });
+});
+
+function sendPost(question) {
+    $.ajax({
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        type: "POST",
+        url: "api/request",
+        data: JSON.stringify({
+            "text": question
+        }),
+        dataType: 'json',
+        success: function(response) {
+            $('#answer-output-id').val(response.text);
+            $('#question-input-id').val(question);
+
+            if ($("#speech-input-type-rb").is(':checked')) {
+                var msg = new SpeechSynthesisUtterance(response.text);
+                window.speechSynthesis.speak(msg);
+            }
+
+        },
+        error: function(e) {}
+    });
+}
