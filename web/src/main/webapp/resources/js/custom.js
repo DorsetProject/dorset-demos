@@ -52,6 +52,7 @@ function sendPost(question) {
 
             if ($("#speech-input-type-rb").is(':checked')) {
                 var msg = new SpeechSynthesisUtterance(response.text);
+                msg.lang = 'en-US';
                 window.speechSynthesis.speak(msg);
             }
 
