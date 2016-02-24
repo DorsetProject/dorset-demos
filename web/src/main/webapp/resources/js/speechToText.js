@@ -19,14 +19,18 @@ var recognizing = false;
 var recognition;
 
 $(document).ready(function() {
-
-    if (!('webkitSpeechRecognition' in window)) {
+    
+    if (!navigator.onLine) {
+        $('#recognition-error-id').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> " 
+                + "<strong> Error! </strong> Network communication is required to use speech recognition.");
+        showAlert("recognition-error-id");
+        $('#speech-input-type-rb').prop("disabled", true);
+    }else if (!('webkitSpeechRecognition' in window)) {
         $('#recognition-error-id').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> " 
                 + "<strong> Error! </strong> Sorry, your Browser does not support the Speech API.");
         showAlert("recognition-error-id");
         $('#speech-input-type-rb').prop("disabled", true);
               
-        
     } else {
 
         recognition = new webkitSpeechRecognition();
