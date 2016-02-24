@@ -19,17 +19,21 @@ var recognizing = false;
 var recognition;
 
 $(document).ready(function() {
-    if (!('webkitSpeechRecognition' in window)) {
-        alert("Sorry, your Browser does not support the Speech API. ");
-        $('#speech-input-type-rb').prop("disabled", true);
 
+    if (!('webkitSpeechRecognition' in window)) {
+        $('#recognition-error-id').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> " 
+                + "<strong> Error! </strong> Sorry, your Browser does not support the Speech API.");
+        showAlert("recognition-error-id");
+        $('#speech-input-type-rb').prop("disabled", true);
+              
+        
     } else {
 
         recognition = new webkitSpeechRecognition();
-        recognition.continuous = true; 
-        recognition.interimResults = true; 
-        recognition.lang = 'en-US'; 
-        
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
         recognition.onstart = function() {
             $('#question-input-id').val('');
             $('#answer-output-id').val('');
@@ -39,19 +43,33 @@ $(document).ready(function() {
         };
 
         recognition.onerror = function(event) {
-            if(event.error == "network"){
-                alert("There was a recognition error due to"
-                        + " no internet connection.\n\n Please check "
-                        + " your network connectivity.");
-
-            }else if(event.error == "no-speech"){
-                alert("There was a recognition error. No speech"
-                        + " was detected. \n\n Please make sure your microphone"
-                        + " is setup properly.");
-
-            }else{
-                alert("There was a recognition error.\n\n");
+            if (event.error == "no-speech") {
+                $('#recognition-error-id').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> " 
+                           + "<strong> Error! </strong> No speech was detected.");
+            } else if (event.error == "audio-capture") {
+                $('#recognition-error-id').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> " 
+                        + "<strong> Error! </strong> Audio capture failed.");
+            } else if (event.error == "network") {
+                $('#recognition-error-id').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> " 
+                        + "<strong> Error! </strong> Some network communication that was required to complete the recognition failed.");
+                $("#speech-input-type-rb").prop("checked", false);
+                $("#text-input-type-rb").prop("checked", true);
+            } else if (event.error == "not-allowed") {
+                $('#recognition-error-id').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> " 
+                        + "<strong> Error! </strong> The user agent is not allowing any speech input to occur for reasons of security, " 
+                        + "privacy or user preference.");
+            } else if (event.error == "bad-grammar") {
+                $('#recognition-error-id').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> " 
+                        + "<strong> Error! </strong> There was an error in the speech recognition grammar or semantic tags, or the grammar " 
+                        + "format or semantic tag format is unsupported.");
+            } else if (event.error == "language-not-supported") {
+                $('#recognition-error-id').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> " 
+                        + "<strong> Error! </strong> The language was not supported.");
+            } else {
+                $('#recognition-error-id').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> " 
+                        + "<strong> Error! </strong> There was a recognition error.");
             }
+            showAlert("recognition-error-id");
         };
 
         recognition.onend = function() {
@@ -70,7 +88,6 @@ $(document).ready(function() {
                     interimTranscript += event.results[i][0].transcript;
                 }
             }
-
             if (finalTranscript.length > 0) {
                 sendPost(finalTranscript);
                 recognition.stop();
@@ -97,3 +114,6 @@ function runSpeechToText() {
 
 }
 
+function showAlert(alertId) {
+    $("#" + alertId).addClass("in");
+}
