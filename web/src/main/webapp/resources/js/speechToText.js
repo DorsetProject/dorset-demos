@@ -39,7 +39,19 @@ $(document).ready(function() {
         };
 
         recognition.onerror = function(event) {
-            //alert("There was a recognition error...");
+            if(event.error == "network"){
+                alert("There was a recognition error due to"
+                        + " no internet connection.\n\n Please check "
+                        + " your network connectivity.");
+
+            }else if(event.error == "no-speech"){
+                alert("There was a recognition error. No speech"
+                        + " was detected. \n\n Please make sure your microphone"
+                        + " is setup properly.");
+
+            }else{
+                alert("There was a recognition error.\n\n");
+            }
         };
 
         recognition.onend = function() {
