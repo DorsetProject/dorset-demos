@@ -16,14 +16,12 @@
  */
 package edu.jhuapl.dorset.demos;
 
-import java.util.Properties;
 import java.util.Scanner;
 
 import edu.jhuapl.dorset.Application;
 import edu.jhuapl.dorset.Request;
 import edu.jhuapl.dorset.Response;
 import edu.jhuapl.dorset.agent.Agent;
-import edu.jhuapl.dorset.agent.AgentRegistry;
 import edu.jhuapl.dorset.agents.CalculatorAgent;
 import edu.jhuapl.dorset.routing.SingleAgentRouter;
 import edu.jhuapl.dorset.routing.Router;
@@ -34,10 +32,8 @@ public class Calculator {
     public static void main(String[] args) {
 
         Agent agent = new CalculatorAgent();
-        AgentRegistry registry = new AgentRegistry();
-        registry.register(agent, new Properties());
-        Router router = new SingleAgentRouter(agent.getName());
-        Application app = new Application(registry, router);
+        Router router = new SingleAgentRouter(agent);
+        Application app = new Application(router);
 
         System.out.println("Welcome to the Dorset calculator demo. "
                 + "Enter mathematical expressions or press 'q' to end this session.\n");

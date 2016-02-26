@@ -16,14 +16,11 @@
  */
 package edu.jhuapl.dorset.demos;
 
-import java.util.Properties;
-
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import edu.jhuapl.dorset.Application;
 import edu.jhuapl.dorset.agent.Agent;
-import edu.jhuapl.dorset.agent.AgentRegistry;
 import edu.jhuapl.dorset.routing.Router;
 import edu.jhuapl.dorset.routing.SingleAgentRouter;
 
@@ -39,11 +36,9 @@ public class AppInitializer extends ResourceConfig {
      * Create the app and bind it for injection
      */
     public AppInitializer() {
-        AgentRegistry registry = new AgentRegistry();
         Agent agent = new UltimateAgent();
-        registry.register(agent, new Properties());
-        Router router = new SingleAgentRouter(agent.getName());
-        app = new Application(registry, router);
+        Router router = new SingleAgentRouter(agent);
+        app = new Application(router);
 
         register(new AbstractBinder() {
             @Override
