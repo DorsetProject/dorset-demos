@@ -35,7 +35,8 @@ public class Runner {
         if (port == 80) {
             System.out.println("Dorset web demo running on http://localhost/");            
         } else {
-            System.out.println("Dorset web demo running on http://localhost:" + String.valueOf(port));
+            System.out.println("Dorset web demo running on http://localhost:" 
+                            + String.valueOf(port) + "/");
         }
         Server server = new Server(port);
 
