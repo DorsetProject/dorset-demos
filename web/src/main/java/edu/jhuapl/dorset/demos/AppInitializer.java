@@ -21,7 +21,14 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import edu.jhuapl.dorset.Application;
 import edu.jhuapl.dorset.agent.Agent;
+import edu.jhuapl.dorset.agents.DateTimeAgent;
+import edu.jhuapl.dorset.agents.DuckDuckGoAgent;
+import edu.jhuapl.dorset.config.MultiValuedMap;
+import edu.jhuapl.dorset.http.HttpClient;
+import edu.jhuapl.dorset.routing.ChainRouter;
+import edu.jhuapl.dorset.routing.KeywordRouter;
 import edu.jhuapl.dorset.routing.Router;
+import edu.jhuapl.dorset.routing.RouterAgentConfig;
 import edu.jhuapl.dorset.routing.SingleAgentRouter;
 
 /**
@@ -36,9 +43,8 @@ public class AppInitializer extends ResourceConfig {
      * Create the app and bind it for injection
      */
     public AppInitializer() {
-        Agent agent = new UltimateAgent();
-        Router router = new SingleAgentRouter(agent);
-        app = new Application(router);
+
+        app = new Application(initializeRouter());
 
         register(new AbstractBinder() {
             @Override
@@ -49,5 +55,22 @@ public class AppInitializer extends ResourceConfig {
 
         // uncomment for logging requests and responses at the INFO level
         //registerInstances(new LoggingFilter(Logger.getLogger("org.glassfish.jersey"), true));
+    }
+
+    private Router initializeRouter() {
+        Agent timeAgent = new DateTimeAgent();
+        MultiValuedMap timeAgentParams = new MultiValuedMap();
+        timeAgentParams.addString(KeywordRouter.KEYWORDS, "time");
+        timeAgentParams.addString(KeywordRouter.KEYWORDS, "date");
+        timeAgentParams.addString(KeywordRouter.KEYWORDS, "day");
+        RouterAgentConfig kwConfig = RouterAgentConfig.create();
+        kwConfig.add(timeAgent, timeAgentParams);
+        Router kwRouter = new KeywordRouter(kwConfig);
+
+        Agent wikiAgent = new DuckDuckGoAgent(new HttpClient());
+        Router wikiRouter = new SingleAgentRouter(wikiAgent);
+
+        Router mainRouter = new ChainRouter(kwRouter, wikiRouter);
+        return mainRouter;
     }
 }
