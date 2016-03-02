@@ -15,7 +15,12 @@ Run
 Launch the web application by running:
 
 ```
-java -jar target/[war file name]
+./run.sh
 ```
 
-and then visiting http://localhost:8888/ with your web browser.
+and then visiting http://localhost:8888/ with your web browser. Optionally, you can specify the port with
+
+```
+./run.sh [port]
+```
+

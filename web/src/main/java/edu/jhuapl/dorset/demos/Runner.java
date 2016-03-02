@@ -28,7 +28,16 @@ public class Runner {
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
 
-        Server server = new Server(8888);
+        int port = 8888;
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+        }
+        if (port == 80) {
+            System.out.println("Dorset web demo running on http://localhost/");            
+        } else {
+            System.out.println("Dorset web demo running on http://localhost:" + String.valueOf(port));
+        }
+        Server server = new Server(port);
 
         WebAppContext context = new WebAppContext();
         context.setServer(server);
