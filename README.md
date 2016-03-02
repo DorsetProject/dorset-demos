@@ -10,6 +10,10 @@ calculator
 -------------
 The calculator project is a simple command line interface to the Dorset framework. A single agent is configured which provides the calculator functions.
 
+python-agent
+-------------
+A sample remote agent implemented in python.
+
 web
 ------------
 The web project leverages Dorset's web api to provide a web browser based user interface. 
