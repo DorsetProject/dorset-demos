@@ -22,3 +22,6 @@
 .alertMargin { 
 	margin-top: 10px; 
 }
+.textAreaWidth{
+    resize:vertical;
+}
