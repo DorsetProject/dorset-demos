@@ -22,9 +22,14 @@
       </style>
       <script src="resources/jQuery/jquery.min.js"></script>
       <script src="resources/bootstrap/bootstrap.min.js"></script>
-      <script src="resources/js/custom.js"/></script>
+      <script src="resources/js/custom.js"/></script> 
       <script src="resources/js/speechToText.js"/></script>
+      
+      <!-- Chart.js scripts -->
+      <script src="resources/charting/Chart.min.js"/></script>
+      
       <title> Dorset Web Demo </title>
+      
    </head>
    <body id="background">
       <div class="container padding">
@@ -64,6 +69,19 @@
                   </div>
                </div>
             </div>
+         </div>
+      </div>
+      <div id="lineplot-canvas-id" class="panel panel-default">
+         <div  id="lineplot-canvas-title-id"class="panel-heading text-center"></div>
+         <div id="lineplot-canvas-body-id" class="panel-body">
+            <div class="row">
+               <div id="yaxis-lineplot-canvas-id" class="col-sm-1 text-center"></div>
+               <div class="col-sm-11 ">
+                  <canvas id="lineplot-canvas-graph-id" class= "panel-transparent" height="180" width="600"></canvas>
+               </div>
+            </div>
+            <div id="xaxis-lineplot-canvas-id" class="col-sm-12 text-center"></div>
+            <div id="export-canvas-button"></div>
          </div>
       </div>
    </body>
