@@ -72,6 +72,6 @@ public class AppInitializer extends ResourceConfig {
         Router wikiRouter = new SingleAgentRouter(wikiAgent);
 
         Router mainRouter = new ChainedRouter(kwRouter, wikiRouter);
-        return new ChainedRouter(mainRouter);
+        return mainRouter;
         }
 }
