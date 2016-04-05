@@ -14,7 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
 $(document).ready(function() {
+
+    $("#scatterplot-canvas-id").hide();
+
     $("#text-input-type-rb").prop("checked", true);
 
     $("input[name='text']").change(function() {
@@ -32,9 +36,13 @@ $(document).ready(function() {
             runSpeechToText();
         }
     });
+
 });
 
 function sendPost(question) {
+
+    $("#scatterplot-canvas-id").hide();
+
     $.ajax({
         headers: {
             'Accept': 'application/json',
@@ -47,6 +55,11 @@ function sendPost(question) {
         }),
         dataType: 'json',
         success: function(response) {
+
+            if (response.type == "json") {
+                plotScatterplot(response.payload);
+            }
+            
             $('#answer-output-id').val(response.text);
             $('#question-input-id').val(question);
 
@@ -59,4 +72,47 @@ function sendPost(question) {
         },
         error: function(e) {}
     });
+}
+
+function plotScatterplot(payload) {
+    payloadObj = (JSON.parse(payload));
+
+    var labels = [];
+    if (payloadObj.labels == null) {
+        for (var i = 0; i < JSON.parse(payloadObj.data).length; i++) {
+            labels.push("");
+        }
+    } else {
+        labels = JSON.parse(payloadObj.labels);
+    }
+
+    $("#scatterplot-canvas-title-id").html(payloadObj.title);
+    $("#xaxis-scatterplot-canvas-id").html(payloadObj.xaxis);
+    $("#yaxis-scatterplot-canvas-id").html(payloadObj.yaxis);
+
+    var lineChartData = {
+        labels: labels,
+        datasets: [{
+            label: payloadObj.title,
+            fillColor: "rgba(151,187,205,0.2)",
+            strokeColor: "rgba(151,187,205,1)",
+            pointColor: "rgba(151,187,205,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(151,187,205,1)",
+            data: JSON.parse(payloadObj.data)
+        }]
+    }
+
+    $("#scatterplot-canvas-id").show();
+
+    var ctx = document.getElementById("scatterplot-canvas-graph-id").getContext("2d");
+    window.myLine = new Chart(ctx).Line(lineChartData, {
+        responsive: true,
+        onAnimationComplete: scatterplotDoneDrawing
+    });
+
+    function scatterplotDoneDrawing() {
+        $("#export-canvas-button").html("<button type=\"button\" class=\"pull-right btn btn-default\" id=\"export-canvas-button\"><a download=\"" + payloadObj.title + ".png\" href=" + ctx.canvas.toDataURL() + ">Export</a></button>");
+    }
 }
