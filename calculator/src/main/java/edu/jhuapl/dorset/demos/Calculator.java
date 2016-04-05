@@ -21,11 +21,10 @@ import java.util.Scanner;
 import edu.jhuapl.dorset.Application;
 import edu.jhuapl.dorset.Request;
 import edu.jhuapl.dorset.Response;
-import edu.jhuapl.dorset.agent.Agent;
+import edu.jhuapl.dorset.agents.Agent;
 import edu.jhuapl.dorset.agents.CalculatorAgent;
-import edu.jhuapl.dorset.routing.SingleAgentRouter;
 import edu.jhuapl.dorset.routing.Router;
-
+import edu.jhuapl.dorset.routing.SingleAgentRouter;
 
 public class Calculator {
 
@@ -36,7 +35,7 @@ public class Calculator {
         Application app = new Application(router);
 
         System.out.println("Welcome to the Dorset calculator demo. "
-                + "Enter mathematical expressions or press 'q' to end this session.\n");
+                        + "Enter mathematical expressions or press 'q' to end this session.\n");
 
         String input = "";
         Scanner in = new Scanner(System.in);
@@ -51,9 +50,6 @@ public class Calculator {
 
             Request request = new Request(input);
             Response response = app.process(request);
-            if (response.getStatusCode() != 0) {
-                System.err.println("Sorry. We did not understand your expression.");
-            }
 
             System.out.println(response.getText());
         }
