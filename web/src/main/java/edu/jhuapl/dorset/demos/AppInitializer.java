@@ -20,16 +20,17 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import edu.jhuapl.dorset.Application;
-import edu.jhuapl.dorset.agent.Agent;
+import edu.jhuapl.dorset.agents.Agent;
 import edu.jhuapl.dorset.agents.DateTimeAgent;
 import edu.jhuapl.dorset.agents.DuckDuckGoAgent;
 import edu.jhuapl.dorset.config.MultiValuedMap;
 import edu.jhuapl.dorset.http.HttpClient;
-import edu.jhuapl.dorset.routing.ChainRouter;
+import edu.jhuapl.dorset.routing.ChainedRouter;
 import edu.jhuapl.dorset.routing.KeywordRouter;
 import edu.jhuapl.dorset.routing.Router;
 import edu.jhuapl.dorset.routing.RouterAgentConfig;
 import edu.jhuapl.dorset.routing.SingleAgentRouter;
+
 
 /**
  * Initialize resources for the Dorset api
@@ -70,7 +71,7 @@ public class AppInitializer extends ResourceConfig {
         Agent wikiAgent = new DuckDuckGoAgent(new HttpClient());
         Router wikiRouter = new SingleAgentRouter(wikiAgent);
 
-        Router mainRouter = new ChainRouter(kwRouter, wikiRouter);
-        return mainRouter;
-    }
+        Router mainRouter = new ChainedRouter(kwRouter, wikiRouter);
+        return new ChainedRouter(mainRouter);
+        }
 }
