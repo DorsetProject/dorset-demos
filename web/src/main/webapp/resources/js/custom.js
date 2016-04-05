@@ -17,7 +17,7 @@
  
 $(document).ready(function() {
 
-    $("#scatterplot-canvas-id").hide();
+    $("#lineplot-canvas-id").hide();
 
     $("#text-input-type-rb").prop("checked", true);
 
@@ -41,7 +41,7 @@ $(document).ready(function() {
 
 function sendPost(question) {
 
-    $("#scatterplot-canvas-id").hide();
+    $("#lineplot-canvas-id").hide();
 
     $.ajax({
         headers: {
@@ -57,7 +57,7 @@ function sendPost(question) {
         success: function(response) {
 
             if (response.type == "json") {
-                plotScatterplot(response.payload);
+                plotLineplot(response.payload);
             }
             
             $('#answer-output-id').val(response.text);
@@ -74,7 +74,7 @@ function sendPost(question) {
     });
 }
 
-function plotScatterplot(payload) {
+function plotLineplot(payload) {
     payloadObj = (JSON.parse(payload));
 
     var labels = [];
@@ -86,9 +86,9 @@ function plotScatterplot(payload) {
         labels = JSON.parse(payloadObj.labels);
     }
 
-    $("#scatterplot-canvas-title-id").html(payloadObj.title);
-    $("#xaxis-scatterplot-canvas-id").html(payloadObj.xaxis);
-    $("#yaxis-scatterplot-canvas-id").html(payloadObj.yaxis);
+    $("#lineplot-canvas-title-id").html(payloadObj.title);
+    $("#xaxis-lineplot-canvas-id").html(payloadObj.xaxis);
+    $("#yaxis-lineplot-canvas-id").html(payloadObj.yaxis);
 
     var lineChartData = {
         labels: labels,
@@ -104,15 +104,15 @@ function plotScatterplot(payload) {
         }]
     }
 
-    $("#scatterplot-canvas-id").show();
+    $("#lineplot-canvas-id").show();
 
-    var ctx = document.getElementById("scatterplot-canvas-graph-id").getContext("2d");
+    var ctx = document.getElementById("lineplot-canvas-graph-id").getContext("2d");
     window.myLine = new Chart(ctx).Line(lineChartData, {
         responsive: true,
-        onAnimationComplete: scatterplotDoneDrawing
+        onAnimationComplete: lineplotDoneDrawing
     });
 
-    function scatterplotDoneDrawing() {
+    function lineplotDoneDrawing() {
         $("#export-canvas-button").html("<button type=\"button\" class=\"pull-right btn btn-default\" id=\"export-canvas-button\"><a download=\"" + payloadObj.title + ".png\" href=" + ctx.canvas.toDataURL() + ">Export</a></button>");
     }
 }
