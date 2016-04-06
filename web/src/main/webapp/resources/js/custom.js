@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
 $(document).ready(function() {
 
     $("#lineplot-canvas-id").hide();
@@ -57,9 +56,14 @@ function sendPost(question) {
         success: function(response) {
 
             if (response.type == "json") {
-                plotLineplot(response.payload);
+                payloadObj = (JSON.parse(response.payload));
+                if (payloadObj.plotType == "lineplot") {
+                    plotLineplot(payloadObj);
+
+                }
+
             }
-            
+
             $('#answer-output-id').val(response.text);
             $('#question-input-id').val(question);
 
@@ -74,9 +78,7 @@ function sendPost(question) {
     });
 }
 
-function plotLineplot(payload) {
-    payloadObj = (JSON.parse(payload));
-
+function plotLineplot(payloadObj) {
     var labels = [];
     if (payloadObj.labels == null) {
         for (var i = 0; i < JSON.parse(payloadObj.data).length; i++) {
