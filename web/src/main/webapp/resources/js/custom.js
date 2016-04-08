@@ -59,19 +59,16 @@ function sendPost(question) {
 
             if (response.type == "error") {
 
-                if (response.error.message != null) {
-                    $('#answer-output-id').val(response.error.message);
+                $('#answer-output-id').val(response.error.message);
 
-                    if ($("#speech-input-type-rb").is(':checked')) {
-                        var msg = new SpeechSynthesisUtterance(response.error.message);
-                        msg.lang = 'en-US';
-                        window.speechSynthesis.speak(msg);
-                    }
-
+                if ($("#speech-input-type-rb").is(':checked')) {
+                    var msg = new SpeechSynthesisUtterance(response.error.message);
+                    msg.lang = 'en-US';
+                    window.speechSynthesis.speak(msg);
                 }
 
-
             } else {
+            
                 $('#answer-output-id').val(response.text);
 
                 if ($("#speech-input-type-rb").is(':checked')) {
