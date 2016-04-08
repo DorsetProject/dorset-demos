@@ -55,26 +55,44 @@ function sendPost(question) {
         dataType: 'json',
         success: function(response) {
 
-            if (response.type == "json") {
-                payloadObj = (JSON.parse(response.payload));
-                if (payloadObj.plotType == "lineplot") {
-                    plotLineplot(payloadObj);
+            $('#question-input-id').val(question);
 
+            if (response.type == "error") {
+
+                if (response.error.message != null) {
+                    $('#answer-output-id').val(response.error.message);
+
+                    if ($("#speech-input-type-rb").is(':checked')) {
+                        var msg = new SpeechSynthesisUtterance(response.error.message);
+                        msg.lang = 'en-US';
+                        window.speechSynthesis.speak(msg);
+                    }
+
+                }
+
+
+            } else {
+                $('#answer-output-id').val(response.text);
+
+                if ($("#speech-input-type-rb").is(':checked')) {
+                    var msg = new SpeechSynthesisUtterance(response.text);
+                    msg.lang = 'en-US';
+                    window.speechSynthesis.speak(msg);
+                }
+
+                if (response.type == "json") {
+                    payloadObj = (JSON.parse(response.payload));
+                    if (payloadObj.plotType == "lineplot") {
+                        plotLineplot(payloadObj);
+                    }
                 }
 
             }
 
-            $('#answer-output-id').val(response.text);
-            $('#question-input-id').val(question);
-
-            if ($("#speech-input-type-rb").is(':checked')) {
-                var msg = new SpeechSynthesisUtterance(response.text);
-                msg.lang = 'en-US';
-                window.speechSynthesis.speak(msg);
-            }
-
         },
-        error: function(e) {}
+        error: function(e) {
+
+        }
     });
 }
 
