@@ -23,6 +23,10 @@
 .alertMargin { 
 	margin-top: 10px; 
 }
-.textAreaWidth{
+.textAreaWidth {
     resize:vertical;
 }
+.centerImage {
+    display: block;
+    margin-left: auto;
+    margin-right: auto }

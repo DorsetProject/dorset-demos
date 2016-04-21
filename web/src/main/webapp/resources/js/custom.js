@@ -19,6 +19,7 @@ var linePlot;
 $(document).ready(function() {
 
     $("#lineplot-canvas-id").hide();
+    $("#image-canvas-id").hide();
 
     $("#text-input-type-rb").prop("checked", true);
 
@@ -43,6 +44,7 @@ $(document).ready(function() {
 function sendPost(question) {
 
     $("#lineplot-canvas-id").hide();
+    $("#image-canvas-id").hide();
 
     $.ajax({
         headers: {
@@ -84,6 +86,10 @@ function sendPost(question) {
                     if (payloadObj.plotType == "lineplot") {
                         plotLineplot(payloadObj);
                     }
+                }
+
+                if (response.type == "image_embed") {
+                    showImage(response.payload);
                 }
 
             }
@@ -168,4 +174,11 @@ function plotLineplot(payloadObj) {
     function lineplotDoneDrawing() {
         $("#export-canvas-button").html("<button type=\"button\" class=\"pull-right btn btn-default\" id=\"export-canvas-button\"><a download=\"" + payloadObj.title + ".png\" href=" + ctx.canvas.toDataURL() + ">Export</a></button>");
     }
+}
+
+function showImage(base64Str){
+    $("#image-canvas-id").show();
+    $("#image-id").html("<img class='panel-body centerImage' src='data:image/jpeg;base64,"+base64Str+"'>");
+    $("#export-image-button").html("<button type='button' class='pull-right btn btn-default' id='export-image-button'><a href='data:image/png;base64,"+base64Str+"' download='image.png'>Export</a>");
+
 }
