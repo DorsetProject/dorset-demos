@@ -105,17 +105,17 @@ function plotLineplot(payloadObj) {
 
     datasetsObjectFormatted = [];
 
-    //create color array to rotate through
-    rgbColorFormatter = ["rgba(0,225,204,0.3)",
-        "rgba(153,194,255,0.3)",
-        "rgba(51,133,255,0.3)",
-        "rgba(128,255,170,0.3)",
-        "rgba(0,38,153,0.3)",
-        "rgba(0,102,0,0.3)",
-        "rgba(255,0,0,0.2)",
-        "rgba(255,51,204,0.3)",
-        "rgba(255,136,77,0.3)",
-        "rgba(153, 51, 255,0.2)"
+    //create color array to rotate through (color of line in line plot) 
+    rgbColorFormatter = ["rgba(0,225,204,0.3)", //teal 
+        "rgba(153,194,255,0.3)", //light blue 
+        "rgba(51,133,255,0.3)", //royal blue
+        "rgba(128,255,170,0.3)", //light green 
+        "rgba(0,38,153,0.3)", //dark blue
+        "rgba(0,102,0,0.3)", //dark green 
+        "rgba(255,0,0,0.2)", //red 
+        "rgba(255,51,204,0.3)", //pink 
+        "rgba(255,136,77,0.3)", //orange 
+        "rgba(153, 51, 255,0.2)" //purple
     ];
 
     counter = 0;
