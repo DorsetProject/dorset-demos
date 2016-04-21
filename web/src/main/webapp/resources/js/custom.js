@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var linePlot;
+
 $(document).ready(function() {
 
     $("#lineplot-canvas-id").hide();
@@ -68,7 +70,7 @@ function sendPost(question) {
                 }
 
             } else {
-            
+
                 $('#answer-output-id').val(response.text);
 
                 if ($("#speech-input-type-rb").is(':checked')) {
@@ -94,6 +96,49 @@ function sendPost(question) {
 }
 
 function plotLineplot(payloadObj) {
+
+    if (linePlot != null) {
+        linePlot.destroy();
+    }
+
+    dataObject = JSON.parse(payloadObj.data);
+
+    datasetsObjectFormatted = [];
+
+    //create color array to rotate through (color of line in line plot) 
+    rgbColorFormatter = ["rgba(0,225,204,0.3)", //teal 
+        "rgba(153,194,255,0.3)", //light blue 
+        "rgba(51,133,255,0.3)", //royal blue
+        "rgba(128,255,170,0.3)", //light green 
+        "rgba(0,38,153,0.3)", //dark blue
+        "rgba(0,102,0,0.3)", //dark green 
+        "rgba(255,0,0,0.2)", //red 
+        "rgba(255,51,204,0.3)", //pink 
+        "rgba(255,136,77,0.3)", //orange 
+        "rgba(153, 51, 255,0.2)" //purple
+    ];
+
+    counter = 0;
+    for (var key in dataObject) {
+
+        if (dataObject.hasOwnProperty(key)) {
+
+            datasetsObjectFormatted.push({
+                label: key,
+                fillColor: rgbColorFormatter[counter % 10],
+                strokeColor: rgbColorFormatter[counter % 10],
+                pointColor: rgbColorFormatter[counter % 10],
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: rgbColorFormatter[counter % 10],
+                data: dataObject[key]
+            });
+
+        }
+
+        counter++;
+    }
+
     var labels = [];
     if (payloadObj.labels == null) {
         for (var i = 0; i < JSON.parse(payloadObj.data).length; i++) {
@@ -109,22 +154,13 @@ function plotLineplot(payloadObj) {
 
     var lineChartData = {
         labels: labels,
-        datasets: [{
-            label: payloadObj.title,
-            fillColor: "rgba(151,187,205,0.2)",
-            strokeColor: "rgba(151,187,205,1)",
-            pointColor: "rgba(151,187,205,1)",
-            pointStrokeColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(151,187,205,1)",
-            data: JSON.parse(payloadObj.data)
-        }]
+        datasets: datasetsObjectFormatted
     }
 
     $("#lineplot-canvas-id").show();
 
     var ctx = document.getElementById("lineplot-canvas-graph-id").getContext("2d");
-    window.myLine = new Chart(ctx).Line(lineChartData, {
+    linePlot = new Chart(ctx).Line(lineChartData, {
         responsive: true,
         onAnimationComplete: lineplotDoneDrawing
     });
