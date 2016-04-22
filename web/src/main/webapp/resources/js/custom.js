@@ -168,17 +168,18 @@ function plotLineplot(payloadObj) {
     var ctx = document.getElementById("lineplot-canvas-graph-id").getContext("2d");
     linePlot = new Chart(ctx).Line(lineChartData, {
         responsive: true,
-        onAnimationComplete: lineplotDoneDrawing
+        onAnimationComplete: lineplotDoneDrawing,
+        scaleFontColor: "#fff"
     });
 
     function lineplotDoneDrawing() {
-        $("#export-canvas-button").html("<button type=\"button\" class=\"pull-right btn btn-default\" id=\"export-canvas-button\"><a download=\"" + payloadObj.title + ".png\" href=" + ctx.canvas.toDataURL() + ">Export</a></button>");
+        $("#export-canvas-button").html("<button type='button' class='pull-right btn btn-default' id='export-canvas-button'><a download='" + payloadObj.title + ".png' href=" + ctx.canvas.toDataURL() + ">Export</a></button>");
     }
 }
 
 function showImage(base64Str){
     $("#image-canvas-id").show();
     $("#image-id").html("<img class='panel-body centerImage' src='data:image/jpeg;base64,"+base64Str+"'>");
-    $("#export-image-button").html("<button type='button' class='pull-right btn btn-default' id='export-image-button'><a href='data:image/png;base64,"+base64Str+"' download='image.png'>Export</a>");
+    $("#export-image-button").html("<button type='button' class='pull-right btn btn-default' id='export-image-button'><a download='image.png' href='data:image/png;base64,"+base64Str+"'>Export</a>");
 
 }
