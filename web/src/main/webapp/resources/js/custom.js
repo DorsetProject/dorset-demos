@@ -131,12 +131,11 @@ function plotLineplot(payloadObj) {
 
             datasetsObjectFormatted.push({
                 label: key,
-                fillColor: rgbColorFormatter[counter % 10],
-                strokeColor: rgbColorFormatter[counter % 10],
-                pointColor: rgbColorFormatter[counter % 10],
-                pointStrokeColor: "#fff",
-                pointHighlightFill: "#fff",
-                pointHighlightStroke: rgbColorFormatter[counter % 10],
+                backgroundColor: rgbColorFormatter[counter % 10],
+                borderColor: rgbColorFormatter[counter % 10],
+                boarderWidth: 1,
+                hoverBorderColor: rgbColorFormatter[counter % 10],
+                hoverBackgroundColor: rgbColorFormatter[counter % 10],
                 data: dataObject[key]
             });
 
@@ -166,10 +165,15 @@ function plotLineplot(payloadObj) {
     $("#lineplot-canvas-id").show();
 
     var ctx = document.getElementById("lineplot-canvas-graph-id").getContext("2d");
-    linePlot = new Chart(ctx).Line(lineChartData, {
-        responsive: true,
-        onAnimationComplete: lineplotDoneDrawing,
-        scaleFontColor: "#fff"
+    linePlot = new Chart(ctx, {
+        type: 'line',
+        data: lineChartData,
+        options: {
+            responsive: true,
+            animation: {
+                onComplete: lineplotDoneDrawing,
+            },
+        }
     });
 
     function lineplotDoneDrawing() {
@@ -177,9 +181,8 @@ function plotLineplot(payloadObj) {
     }
 }
 
-function showImage(base64Str){
+function showImage(base64Str) {
     $("#image-canvas-id").show();
-    $("#image-id").html("<img class='panel-body centerImage' src='data:image/jpeg;base64,"+base64Str+"'>");
-    $("#export-image-button").html("<button type='button' class='pull-right btn btn-default' id='export-image-button'><a download='image.png' href='data:image/png;base64,"+base64Str+"'>Export</a>");
-
+    $("#image-id").html("<img class='panel-body centerImage' src='data:image/jpeg;base64," + base64Str + "'>");
+    $("#export-image-button").html("<button type='button' class='pull-right btn btn-default' id='export-image-button'><a download='image.png' href='data:image/png;base64," + base64Str + "'>Export</a>");
 }

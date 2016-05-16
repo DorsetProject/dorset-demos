@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>edu.jhuapl.dorset.demos</groupId>
-		<artifactId>dorset-demos</artifactId>
-		<version>0.2.0-SNAPSHOT</version>
-	</parent>
+  <parent>
+    <groupId>edu.jhuapl.dorset.demos</groupId>
+    <artifactId>dorset-demos</artifactId>
+    <version>0.3.0-SNAPSHOT</version>
+  </parent>
 
 	<artifactId>calculator</artifactId>
 	<packaging>jar</packaging>
