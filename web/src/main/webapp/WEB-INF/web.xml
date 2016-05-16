@@ -20,10 +20,10 @@
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 
-		<servlet-mapping>
-			<servlet-name>dorset</servlet-name>
-			<url-pattern>/api/*</url-pattern>
-			<resources mapping="/resources/**" location="/resources/" />
-		</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>dorset</servlet-name>
+		<url-pattern>/api/*</url-pattern>
+		<resources mapping="/resources/**" location="/resources/" />
+	</servlet-mapping>
 
 </web-app>

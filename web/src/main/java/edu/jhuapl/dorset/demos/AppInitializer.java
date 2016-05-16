@@ -31,7 +31,6 @@ import edu.jhuapl.dorset.routing.Router;
 import edu.jhuapl.dorset.routing.RouterAgentConfig;
 import edu.jhuapl.dorset.routing.SingleAgentRouter;
 
-
 /**
  * Initialize resources for the Dorset api
  * 
@@ -55,7 +54,8 @@ public class AppInitializer extends ResourceConfig {
         });
 
         // uncomment for logging requests and responses at the INFO level
-        //registerInstances(new LoggingFilter(Logger.getLogger("org.glassfish.jersey"), true));
+        // registerInstances(new
+        // LoggingFilter(Logger.getLogger("org.glassfish.jersey"), true));
     }
 
     private Router initializeRouter() {
@@ -73,5 +73,5 @@ public class AppInitializer extends ResourceConfig {
 
         Router mainRouter = new ChainedRouter(kwRouter, wikiRouter);
         return mainRouter;
-        }
+    }
 }
