@@ -24,13 +24,12 @@ import edu.jhuapl.dorset.agents.Agent;
 import edu.jhuapl.dorset.agents.DateTimeAgent;
 import edu.jhuapl.dorset.agents.DuckDuckGoAgent;
 import edu.jhuapl.dorset.config.MultiValuedMap;
-import edu.jhuapl.dorset.http.HttpClient;
+import edu.jhuapl.dorset.http.apache.ApacheHttpClient;
 import edu.jhuapl.dorset.routing.ChainedRouter;
 import edu.jhuapl.dorset.routing.KeywordRouter;
 import edu.jhuapl.dorset.routing.Router;
 import edu.jhuapl.dorset.routing.RouterAgentConfig;
 import edu.jhuapl.dorset.routing.SingleAgentRouter;
-
 
 /**
  * Initialize resources for the Dorset api
@@ -55,7 +54,8 @@ public class AppInitializer extends ResourceConfig {
         });
 
         // uncomment for logging requests and responses at the INFO level
-        //registerInstances(new LoggingFilter(Logger.getLogger("org.glassfish.jersey"), true));
+        // registerInstances(new
+        // LoggingFilter(Logger.getLogger("org.glassfish.jersey"), true));
     }
 
     private Router initializeRouter() {
@@ -68,10 +68,10 @@ public class AppInitializer extends ResourceConfig {
         kwConfig.add(timeAgent, timeAgentParams);
         Router kwRouter = new KeywordRouter(kwConfig);
 
-        Agent wikiAgent = new DuckDuckGoAgent(new HttpClient());
+        Agent wikiAgent = new DuckDuckGoAgent(new ApacheHttpClient());
         Router wikiRouter = new SingleAgentRouter(wikiAgent);
 
         Router mainRouter = new ChainedRouter(kwRouter, wikiRouter);
         return mainRouter;
-        }
+    }
 }

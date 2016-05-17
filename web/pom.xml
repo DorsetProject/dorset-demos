@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>edu.jhuapl.dorset.demos</groupId>
 		<artifactId>dorset-demos</artifactId>
-		<version>0.2.0-SNAPSHOT</version>
+		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>web</artifactId>
@@ -34,7 +34,6 @@
 			<artifactId>web-api</artifactId>
 			<version>${dorset.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -45,6 +44,7 @@
 			<artifactId>jul-to-slf4j</artifactId>
 			<version>${slf4j.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
@@ -52,8 +52,8 @@
 			<scope>provided</scope>
 		</dependency>
 
-
 	</dependencies>
+
 
 	<build>
 		<plugins>
@@ -69,13 +69,11 @@
 					</archive>
 					<!-- ensures logback.xml is in classes for standalone container servers -->
 					<webResources>
- 						<resource>
+						<resource>
 							<directory>src/main/resources</directory>
 							<targetPath>WEB-INF/classes</targetPath>
-						</resource> 
+						</resource>
 					</webResources>
-
-
 				</configuration>
 			</plugin>
 			<plugin>
@@ -95,7 +93,6 @@
 								<move
 									file="${project.build.directory}/classes/edu/jhuapl/dorset/demos/Runner.class"
 									tofile="${project.build.directory}/${project.artifactId}-${project.version}/edu/jhuapl/dorset/demos/Runner.class" />
-
 								<!-- logback.xml must be in root of war for embedded running of jetty -->
 								<copy file="${project.build.directory}/classes/logback.xml"
 									tofile="${project.build.directory}/${project.artifactId}-${project.version}/logback.xml" />

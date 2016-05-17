@@ -1,62 +1,62 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>edu.jhuapl.dorset.demos</groupId>
-  <artifactId>dorset-demos</artifactId>
-  <version>0.2.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+	<groupId>edu.jhuapl.dorset.demos</groupId>
+	<artifactId>dorset-demos</artifactId>
+	<version>0.3.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-  <name>Dorset Demos</name>
-  <description>Demonstrations of the Dorset framework</description>
-  <url>https://github.com/DorsetProject/dorset-demos</url>
-  <issueManagement>
-    <system>Github</system>
-    <url>https://github.com/DorsetProject/dorset-demos/issues</url>
-  </issueManagement>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <organization>
-    <name>The Johns Hopkins University Applied Physics Laboratory LLC</name>
-    <url>http://www.jhuapl.edu/</url>
-  </organization>
+	<name>Dorset Demos</name>
+	<description>Demonstrations of the Dorset framework</description>
+	<url>https://github.com/DorsetProject/dorset-demos</url>
+	<issueManagement>
+		<system>Github</system>
+		<url>https://github.com/DorsetProject/dorset-demos/issues</url>
+	</issueManagement>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<organization>
+		<name>The Johns Hopkins University Applied Physics Laboratory LLC</name>
+		<url>http://www.jhuapl.edu/</url>
+	</organization>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jdk.version>1.7</jdk.version>
-    <dorset.version>0.2.0</dorset.version>
-  </properties>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<jdk.version>1.7</jdk.version>
+		<dorset.version>0.3.0</dorset.version>
+	</properties>
 
-  <modules>
-    <module>calculator</module>
-    <module>web</module>
-  </modules>
+	<modules>
+		<module>calculator</module>
+		<module>web</module>
+	</modules>
 
-  <dependencies>
-  </dependencies>
+	<dependencies>
+	</dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>${jdk.version}</source>
-          <target>${jdk.version}</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>${jdk.version}</source>
+					<target>${jdk.version}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
-  <scm>
-    <connection>scm:git:git@github.com:DorsetProject/dorset-demos.git</connection>
-    <developerConnection>scm:git:git@github.com:DorsetProject/dorset-demos.git</developerConnection>
-    <url>https://github.com/DorsetProject/dorset-demos</url>
-  </scm>
+	<scm>
+		<connection>scm:git:git@github.com:DorsetProject/dorset-demos.git</connection>
+		<developerConnection>scm:git:git@github.com:DorsetProject/dorset-demos.git</developerConnection>
+		<url>https://github.com/DorsetProject/dorset-demos</url>
+	</scm>
 </project>
