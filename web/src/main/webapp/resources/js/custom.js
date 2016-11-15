@@ -39,6 +39,12 @@ $(document).ready(function() {
         }
     });
 
+    $("#question-input-id").keyup(function(event) {
+        if (event.keyCode == 13) {
+            $("#start-button").click();
+        }
+    });
+
 });
 
 function sendPost(question) {
