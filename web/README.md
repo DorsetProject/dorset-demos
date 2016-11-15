@@ -24,3 +24,7 @@ and then visiting http://localhost:8888/ with your web browser. Optionally, you 
 ./run.sh [port]
 ```
 
+Available Agents
+----------------
+ * Date/Time agent: ask what the time is or what is today's date
+ * Wikipedia agent: ask who is Barack Obama or what is maple syrup
