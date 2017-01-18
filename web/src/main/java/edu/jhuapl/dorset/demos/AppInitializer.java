@@ -54,8 +54,7 @@ public class AppInitializer extends ResourceConfig {
         });
 
         // uncomment for logging requests and responses at the INFO level
-        // registerInstances(new
-        // LoggingFilter(Logger.getLogger("org.glassfish.jersey"), true));
+        // registerInstances(new LoggingFilter(Logger.getLogger("org.glassfish.jersey"), true));
     }
 
     private Router initializeRouter() {
