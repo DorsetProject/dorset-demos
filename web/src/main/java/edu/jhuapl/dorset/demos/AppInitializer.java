@@ -59,13 +59,13 @@ public class AppInitializer extends ResourceConfig {
     }
 
     private Router initializeRouter() {
-        Agent timeAgent = new DateTimeAgent();
+      
         MultiValuedMap timeAgentParams = new MultiValuedMap();
         timeAgentParams.addString(KeywordRouter.KEYWORDS, "time");
         timeAgentParams.addString(KeywordRouter.KEYWORDS, "date");
         timeAgentParams.addString(KeywordRouter.KEYWORDS, "day");
         RouterAgentConfig kwConfig = RouterAgentConfig.create();
-        kwConfig.add(timeAgent, timeAgentParams);
+        kwConfig.add(new DateTimeAgent(), timeAgentParams);
         Router kwRouter = new KeywordRouter(kwConfig);
 
         Agent wikiAgent = new DuckDuckGoAgent(new ApacheHttpClient());

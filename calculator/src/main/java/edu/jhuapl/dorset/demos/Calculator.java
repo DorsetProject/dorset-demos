@@ -28,6 +28,11 @@ import edu.jhuapl.dorset.routing.SingleAgentRouter;
 
 public class Calculator {
 
+    /**
+     * Calculator application using the Dorset Framework
+     *
+     * @param args  A string array containing the command line arguments
+     */
     public static void main(String[] args) {
 
         Agent agent = new CalculatorAgent();
