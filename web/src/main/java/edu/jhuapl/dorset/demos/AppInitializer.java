@@ -44,8 +44,11 @@ public class AppInitializer extends ResourceConfig {
      */
     public AppInitializer() {
 
+        // Construct the Dorset application
         app = new Application(initializeRouter());
 
+        // This registers the Dorset application so that it can be injected
+        // into the web services.
         register(new AbstractBinder() {
             @Override
             protected void configure() {
@@ -54,12 +57,15 @@ public class AppInitializer extends ResourceConfig {
         });
 
         // uncomment for logging requests and responses at the INFO level
-        // registerInstances(new
-        // LoggingFilter(Logger.getLogger("org.glassfish.jersey"), true));
+        // registerInstances(new LoggingFilter(Logger.getLogger("org.glassfish.jersey"), true));
     }
 
+    /**
+     * Prepares the agents and routers for the Dorset application
+     */
     private Router initializeRouter() {
-      
+        // Our first agent answers questions about time and dates.
+        // We use a keyword-based router that matches words like "time".
         MultiValuedMap timeAgentParams = new MultiValuedMap();
         timeAgentParams.addString(KeywordRouter.KEYWORDS, "time");
         timeAgentParams.addString(KeywordRouter.KEYWORDS, "date");
@@ -68,10 +74,16 @@ public class AppInitializer extends ResourceConfig {
         kwConfig.add(new DateTimeAgent(), timeAgentParams);
         Router kwRouter = new KeywordRouter(kwConfig);
 
+        // Our second agent uses the search engine DuckDuckGo to access Wikipedia.
+        // We use a single agent router which will route everything to the wikipedia agent.
         Agent wikiAgent = new DuckDuckGoAgent(new ApacheHttpClient());
         Router wikiRouter = new SingleAgentRouter(wikiAgent);
 
+        // We chain the routers so that the keyword router runs first and then
+        // falls back to wikipedia agent.
         Router mainRouter = new ChainedRouter(kwRouter, wikiRouter);
+
+        // We return this as the router to initialize the Dorset application with.
         return mainRouter;
     }
 }

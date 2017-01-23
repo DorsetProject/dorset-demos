@@ -23,6 +23,11 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+/**
+ * This is used to run the embedded web server.
+ * Usually, you will just want to deploy a web application to a container
+ * server like Tomcat.
+ */
 public class Runner {
     
     /**
