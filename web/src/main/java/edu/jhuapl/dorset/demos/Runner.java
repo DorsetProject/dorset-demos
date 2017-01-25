@@ -29,6 +29,13 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
  * server like Tomcat.
  */
 public class Runner {
+    
+    /**
+     * Runner
+     * 
+     * @param args  A string array containing the command line arguments
+     * @throws Exception Any Exception
+     */
     public static void main(String[] args) throws Exception {
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();

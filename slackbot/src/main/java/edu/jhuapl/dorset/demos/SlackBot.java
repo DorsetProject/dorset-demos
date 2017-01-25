@@ -32,12 +32,14 @@ import edu.jhuapl.dorset.Request;
 import edu.jhuapl.dorset.Response;
 
 /**
- * Slackbot uses a dorset application to respond to slack requests The bot will listen to all slack
- * channels it has been invited to. It will respond any time a direct message is sent to it, or when
+ * Slackbot uses a dorset application to respond to slack requests. 
+ * The bot will listen to all slack channels it has been invited to. 
+ * It will respond any time a direct message is sent to it, or when
  * its name is used in a message on another channel.
  * 
- * The bot cannot join a slack channel on its own. It has to be invited and it will automatically
- * accept. To invite a bot, just type it's name in the new channel @botname and you will be asked to
+ * The bot cannot join a slack channel on its own. It has to be 
+ * invited and it will automatically accept. To invite a bot, just 
+ * type it's name in the new channel @botname and you will be asked to
  * invite the bot.
  */
 public class SlackBot {
@@ -57,8 +59,8 @@ public class SlackBot {
     /**
      * Connects to Slack using the apiToken
      * 
-     * @param apiToken
-     * @throws IOException
+     * @param apiToken  String api token to connect to Slack
+     * @throws IOException IOException while connecting to Slack 
      */
     public void connectToSlack(String apiToken) throws IOException {
         session = SlackSessionFactory.createWebSocketSlackSession(apiToken);
@@ -67,8 +69,9 @@ public class SlackBot {
 
 
     /**
-     * Registers a listener to reply back whenever someone asks the bot something directly or
-     * mentions the bot in the message. Example: @botname Bot will reply to a channel the bot has
+     * Registers a listener to reply back whenever someone asks the 
+     * bot something directly or mentions the bot in the message. 
+     * Example: @botname Bot will reply to a channel the bot has
      * joined.
      * 
      */
@@ -83,7 +86,7 @@ public class SlackBot {
                     SlackUser messageSender = event.getSender();
 
                     // We get notified even if it is our messages, avoid responding to them.
-                    if (session.sessionPersona().getId().equals(event.getSender().getId())) {
+                    if (session.sessionPersona().getId().equals(messageSender.getId())) {
                         return;
                     }
 
@@ -134,7 +137,7 @@ public class SlackBot {
         }
     }
 
-    /*
+    /**
      * Gets the Dorset Application
      */
     public Application getApplication() {

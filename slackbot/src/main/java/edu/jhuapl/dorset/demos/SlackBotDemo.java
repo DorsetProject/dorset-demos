@@ -29,6 +29,12 @@ import edu.jhuapl.dorset.routing.SingleAgentRouter;
 
 public class SlackBotDemo {
 
+    /**
+     * Get Slack API Token
+     * 
+     * @return the API token
+     * @throws IOException IOException while getting API token
+     */
     public String getSlackApiToken() throws IOException {
         Properties properties = new Properties();
         try (InputStream in = SlackBot.class.getResourceAsStream("/slackbot.properties")) {
@@ -37,13 +43,11 @@ public class SlackBotDemo {
         return properties.getProperty("slackBotToken");
     }
 
-
-
     /**
      * Runs the program.
      * 
-     * @param args
-     * @throws IOException
+     * @param args  A string array containing the command line arguments
+     * @throws IOException IOException 
      */
     public static void main(String[] args) throws IOException {
         Agent agent = new EchoAgent();

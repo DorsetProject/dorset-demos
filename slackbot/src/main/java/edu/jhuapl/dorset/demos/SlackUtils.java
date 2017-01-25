@@ -16,7 +16,6 @@
  */
 package edu.jhuapl.dorset.demos;
 
-import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackMessageHandle;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.replies.EmojiSlackReply;
@@ -25,15 +24,18 @@ import java.util.Map;
 
 public class SlackUtils {
 
+    /**
+     * Create emoji dictionary
+     * 
+     * @param session  Slack session
+     * @return emojis
+     */
     public Map<String, String> createEmojiDict(SlackSession session) {
         SlackMessageHandle<EmojiSlackReply> handle = session.listEmoji();
         Map<String, String> emojis = handle.getReply().getEmojis();
         return emojis;
     }
-    
-    
-    
 
 }
 
-    
+

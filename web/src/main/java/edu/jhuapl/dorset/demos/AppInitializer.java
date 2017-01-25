@@ -66,13 +66,12 @@ public class AppInitializer extends ResourceConfig {
     private Router initializeRouter() {
         // Our first agent answers questions about time and dates.
         // We use a keyword-based router that matches words like "time".
-        Agent timeAgent = new DateTimeAgent();
         MultiValuedMap timeAgentParams = new MultiValuedMap();
         timeAgentParams.addString(KeywordRouter.KEYWORDS, "time");
         timeAgentParams.addString(KeywordRouter.KEYWORDS, "date");
         timeAgentParams.addString(KeywordRouter.KEYWORDS, "day");
         RouterAgentConfig kwConfig = RouterAgentConfig.create();
-        kwConfig.add(timeAgent, timeAgentParams);
+        kwConfig.add(new DateTimeAgent(), timeAgentParams);
         Router kwRouter = new KeywordRouter(kwConfig);
 
         // Our second agent uses the search engine DuckDuckGo to access Wikipedia.
