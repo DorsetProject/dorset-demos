@@ -1,4 +1,4 @@
-# Copyright 2016 The Johns Hopkins University Applied Physics Laboratory LLC
+# Copyright 2016-2017 The Johns Hopkins University Applied Physics Laboratory LLC
 # All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@ import logging
 import ephem
 import time
 from logging.handlers import RotatingFileHandler
+from dorset import Dorset
 
 app = Flask("astronomy")
 file_handler = RotatingFileHandler('error.log', 'a', 1 * 1024 * 1024, 5)
@@ -27,48 +28,25 @@ app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.getLevelName('INFO'))
 
 
-class AgentRequest(object):
-    def __init__(self, text):
-        self.text = text
-
-
-class AgentMessages(object):
-    success = 0
-    no_response = 100
-    bad_request = 101
-    invalid_response = 102
-
-
-class AgentResponse(object):
-    def __init__(self, text='', code=AgentMessages.success):
-        self.text = text
-        self.code = code
-
-    def export(self):
-        return {"text": self.text, "code": self.code}
-
-
 @app.route('/request', methods=['POST'])
 def process():
-    data = request.get_json(silent=False)
-    app.logger.info("Handling request with text: " + data['text'])
+    agent_request = Dorset.decode_request(request.data)
+    app.logger.info("Handling request with text: " + agent_request.text)
 
-    if "new moon" in data['text']:
+    if "new moon" in agent_request.text:
         d = ephem.next_new_moon(time.strftime("%Y/%m/%d"))
         print(time.strftime("%Y/%m/%d"))
-        strResponse = 'The next new moon is ' + str(d)
+        response = 'The next new moon is ' + str(d)
 
-    elif "full moon" in data['text']:
+    elif "full moon" in agent_request.text:
         d = ephem.next_full_moon(time.strftime("%Y/%m/%d"))
-        strResponse = 'The next full moon is ' + str(d)
+        response = 'The next full moon is ' + str(d)
 
     else:
-        strResponse = 'I am sorry, I don\'t understand your question' \
+        response = 'I am sorry, I don\'t understand your question' \
                       ' regarding moons.'
 
-    response = AgentResponse(text=strResponse)
-
-    return json.dumps(response.export())
+    return Dorset.encode_response(text=response)
 
 
 @app.route('/ping', methods=['GET'])
