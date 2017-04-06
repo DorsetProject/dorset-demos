@@ -30,7 +30,7 @@ app.logger.setLevel(logging.getLevelName('INFO'))
 
 @app.route('/request', methods=['POST'])
 def process():
-    agent_request = Dorset.decode_request(request.data)
+    agent_request = Dorset.decode_request(request.get_data(as_text=True))
     app.logger.info("Handling request with text: " + agent_request.text)
 
     if "new moon" in agent_request.text:
