@@ -36,6 +36,7 @@
 		<module>calculator</module>
 		<module>web</module>
 		<module>slackbot</module>
+		<module>email</module>
 	</modules>
 
 	<dependencies>
