@@ -1,6 +1,7 @@
 package edu.jhuapl.dorset.demos;
 
-import javax.mail.MessagingException;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 import edu.jhuapl.dorset.Application;
 import edu.jhuapl.dorset.Request;
@@ -11,11 +12,7 @@ import edu.jhuapl.dorset.routing.Router;
 import edu.jhuapl.dorset.routing.SingleAgentRouter;
 
 public class EmailClient {
-    private static final int INBOX = 1;
-    private static final int COMPLETE = 2;
-    private static final int ERROR = 3;
-    private static final int UNREAD = 1;
-    private static final int PROCESSING = 2;
+
     private static EmailManager email;
     private static int emailsLeftInbox;
 
@@ -26,16 +23,11 @@ public class EmailClient {
      */
     public static void main(String[] args) {
 
-        email = new EmailManager("", "");
+        Config config = ConfigFactory.load();
+        email = new EmailManager(config);    
         email.initFolders();
-
-        try {
-            email.openFolder(EmailType.INBOX.getValue());
-            emailsLeftInbox = email.getCount(EmailType.INBOX.getValue());
-        } catch (MessagingException e1) {
-            e1.printStackTrace();
-        }
-
+        email.openFolder(EmailType.INBOX.getValue());
+        emailsLeftInbox = email.getCount(EmailType.INBOX.getValue());
         System.out.println("Inbox: " + emailsLeftInbox);
 
         try {
@@ -80,16 +72,15 @@ public class EmailClient {
                     emailsLeftInbox = email.getCount(EmailType.INBOX.getValue());
                 }
             }
-        } catch (MessagingException e) {
-            e.printStackTrace();
         } finally {
             email.closeFolder(EmailType.INBOX.getValue());
             email.closeStore();
+            
         }
     }
 
     /**
-     * Determines which agent the request should be sent to
+     * Determine which agent the request should be sent to
      *
      * @param text   the email text
      * @return Agent   the agent to send request to
