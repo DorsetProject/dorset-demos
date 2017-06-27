@@ -5,8 +5,8 @@ public enum EmailType {
     INBOX("INBOX"),
     COMPLETE("Complete"),
     ERROR("Error"),
-    UNREAD("unread"),
-    PROCESSING("processing");
+    UNREAD("unread email"),
+    READ("read email");
     
     private final String type;
     private EmailType(String type) {

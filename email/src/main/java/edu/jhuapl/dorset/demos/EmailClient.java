@@ -26,35 +26,27 @@ public class EmailClient {
         Config config = ConfigFactory.load();
         email = new EmailManager(config);    
         email.initFolders();
-        email.openFolder(EmailType.INBOX.getValue());
-        emailsLeftInbox = email.getCount(EmailType.INBOX.getValue());
+        email.openFolder(EmailType.INBOX);
+        emailsLeftInbox = email.getCount(EmailType.INBOX);
         System.out.println("Inbox: " + emailsLeftInbox);
 
         try {
             while (emailsLeftInbox > 0) {
-                if (!email.folderIsOpen(EmailType.INBOX.getValue())) {
-                    email.openFolder(EmailType.INBOX.getValue());
-                }
-
-                if (email.getEmail(EmailType.INBOX.getValue(), EmailType.UNREAD.getValue())) {
-                    email.markSeen(EmailType.UNREAD.getValue());
+                if (email.getEmail(EmailType.INBOX, EmailType.UNREAD)) {
+                    email.markSeen(EmailType.UNREAD);
                     System.out.println("seen");
-                    email.addToQ(EmailType.UNREAD.getValue());
+                    email.addToQ(EmailType.UNREAD);
                 }
-                emailsLeftInbox = email.getCount(EmailType.INBOX.getValue());
+                emailsLeftInbox = email.getCount(EmailType.INBOX);
 
                 if (!email.isQEmpty()) {
-                    if (!email.folderIsOpen(EmailType.INBOX.getValue())) {
-                        email.openFolder(EmailType.INBOX.getValue());
-                    }
-                    email.removeFromQ(EmailType.PROCESSING.getValue());
+                    email.removeFromQ(EmailType.READ);
                     System.out.println("email to be read: ");
-                    String emailText = email.readEmail(EmailType.PROCESSING.getValue());
+                    String emailText = email.readEmail(EmailType.READ);
 
                     if (emailText.equals("An error occured while processing your email.")) {
-                        System.out.println(email.replyToEmail(emailText, EmailType.PROCESSING.getValue()));
-                        System.out.println(email.copyEmail(EmailType.INBOX.getValue(), EmailType.ERROR.getValue(),
-                                        EmailType.PROCESSING.getValue()));
+                        System.out.println(email.replyToEmail(emailText, EmailType.READ));
+                        System.out.println(email.copyEmail(EmailType.INBOX, EmailType.ERROR, EmailType.READ));
                     } else {
                         Agent agent = determineAgent(emailText);
                         Router router = new SingleAgentRouter(agent);
@@ -63,17 +55,16 @@ public class EmailClient {
                         Response response = app.process(request);
 
                         System.out.println("response: " + response.getText());
-                        System.out.println(email.replyToEmail(response.getText(), EmailType.PROCESSING.getValue()));
-                        System.out.println(email.copyEmail(EmailType.INBOX.getValue(), EmailType.COMPLETE.getValue(), 
-                                        EmailType.PROCESSING.getValue()));
+                        System.out.println(email.replyToEmail(response.getText(), EmailType.READ));
+                        System.out.println(email.copyEmail(EmailType.INBOX, EmailType.COMPLETE, EmailType.READ));
                     }
 
-                    System.out.println(email.deleteEmail(EmailType.INBOX.getValue(), EmailType.PROCESSING.getValue()));
-                    emailsLeftInbox = email.getCount(EmailType.INBOX.getValue());
+                    System.out.println(email.deleteEmail(EmailType.INBOX, EmailType.READ));
+                    emailsLeftInbox = email.getCount(EmailType.INBOX);
                 }
             }
         } finally {
-            email.closeFolder(EmailType.INBOX.getValue());
+            email.closeFolder(EmailType.INBOX);
             email.closeStore();
             
         }

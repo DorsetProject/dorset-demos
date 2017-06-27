@@ -54,16 +54,16 @@ public class EmailManager {
     */
     public EmailManager(Config config) {
         
-        this.user = config.getString(USERNAME_KEY);
-        this.password = config.getString(PASSWORD_KEY);
-        this.mailStoreType = config.getString(MAIL_STORE_TYPE_KEY);
-        this.host = config.getString(HOST_KEY); 
+        user = config.getString(USERNAME_KEY);
+        password = config.getString(PASSWORD_KEY);
+        mailStoreType = config.getString(MAIL_STORE_TYPE_KEY);
+        host = config.getString(HOST_KEY); 
         Properties prop = extractProperties(config);
         
         try {
             session = Session.getDefaultInstance(prop);
             store = session.getStore(mailStoreType);
-            store.connect(host, this.user, this.password);
+            store.connect(host, user, password);
         } catch (MessagingException e) {
             logger.error("Failed to start email session");
         }
@@ -83,7 +83,7 @@ public class EmailManager {
         return prop;
     }
     /**
-     * Initialize 3 folders
+     * Retrieve folders and create them if they do not already exist
      */
     public void initFolders() {
         try {
@@ -107,8 +107,8 @@ public class EmailManager {
      * @param folder   the folder to be returned. Expressed by an integer value
      * @return Folder   the folder to be accessed
      */
-    public Folder determineFolder(String folder) {
-        switch (EmailType.getType(folder)) {
+    public Folder determineFolder(EmailType folder) {
+        switch (folder) {
             case INBOX:
                 return inboxFolder;
             case ERROR:
@@ -126,11 +126,11 @@ public class EmailManager {
      * @param msg   the message to be accessed. Expressed by an integer value
      * @return Message   the message to be used
      */
-    public Message[] determineMsg(String msg) {
-        switch (EmailType.getType(msg)) {
+    public Message[] determineMsg(EmailType msg) {
+        switch (msg) {
             case UNREAD:
                 return unreadMessages;
-            case PROCESSING:
+            case READ:
                 return processingMessages;
             default:
                 return null;
@@ -142,7 +142,7 @@ public class EmailManager {
      * 
      * @param folder   the folder to be opened. Expressed by an integer value  
      */
-    public void openFolder(String folder) {
+    public void openFolder(EmailType folder) {
         try {
             determineFolder(folder).open(Folder.READ_WRITE);
         } catch (MessagingException e) {
@@ -156,7 +156,7 @@ public class EmailManager {
      * @param folder  the folder to be tested. Expressed by an integer value
      * @return boolean   whether the folder is open or not
      */
-    public boolean folderIsOpen(String folder) {
+    public boolean folderIsOpen(EmailType folder) {
         return determineFolder(folder).isOpen();
     }
 
@@ -165,7 +165,7 @@ public class EmailManager {
      * 
      * @param folder   the folder to be close. Expressed by an integer value
      */
-    public void closeFolder(String folder) {
+    public void closeFolder(EmailType folder) {
         try {
             determineFolder(folder).close(false);
         } catch (MessagingException e) {
@@ -190,7 +190,7 @@ public class EmailManager {
      * @param folder   the folder to look in. Expressed by an integer value
      * @return int value   messages left in folder
      */
-    public int getCount(String folder) {
+    public int getCount(EmailType folder) {
         try {
             return determineFolder(folder).getMessageCount();
         } catch (MessagingException e) {
@@ -206,10 +206,10 @@ public class EmailManager {
      * @param msg   the Message variable to populate
      * @return boolean value   whether or not a message was available
      */
-    public boolean getEmail(String folder, String msg) {
+    public boolean getEmail(EmailType folder, EmailType msg) {
         try {
             determineMsg(msg)[0] = determineFolder(folder).getMessage(1);
-            if (msg == EmailType.UNREAD.getValue()) {
+            if (msg == EmailType.UNREAD) {
                 int counter = 1;
                 while (determineMsg(msg)[0].isSet(Flags.Flag.SEEN)) {
                     determineMsg(msg)[0] = determineFolder(folder).getMessage(counter);
@@ -231,7 +231,7 @@ public class EmailManager {
      * 
      * @param msg  the message to be marked seen
      */
-    public void markSeen(String msg) {
+    public void markSeen(EmailType msg) {
         try {
             determineMsg(msg)[0].setFlag(Flags.Flag.SEEN, true);
         } catch (MessagingException e) {
@@ -244,7 +244,7 @@ public class EmailManager {
      * 
      * @param msg   the message to be added to the queue
      */
-    public void addToQ(String msg) {
+    public void addToQ(EmailType msg) {
         handler.addLast(determineMsg(msg)[0]);
     }
 
@@ -262,7 +262,7 @@ public class EmailManager {
      * 
      * @param msg   the Message variable to assign the removed message to
      */
-    public void removeFromQ(String msg) {
+    public void removeFromQ(EmailType msg) {
         determineMsg(msg)[0] = handler.removeFirst();
     }
 
@@ -272,7 +272,7 @@ public class EmailManager {
      * @param msg   the message to read. Expressed by an integer value
      * @return msgContent  the text from the specified email   
      */
-    public String readEmail(String msg) {
+    public String readEmail(EmailType msg) {
         try {
             Message mess = determineMsg(msg)[0];
             System.out.println("---------------------------------");
@@ -330,7 +330,7 @@ public class EmailManager {
      * @param msg   the message to be moved
      * @return message that email was moved TODO
      */
-    public String copyEmail(String fromFolder, String toFolder, String msg) {
+    public String copyEmail(EmailType fromFolder, EmailType toFolder, EmailType msg) {
         try {
             determineFolder(fromFolder).copyMessages(determineMsg(msg), determineFolder(toFolder));
             return "email moved from " + fromFolder + " to " + toFolder;
@@ -347,7 +347,7 @@ public class EmailManager {
      * @param msg   the message to be deleted
      * @return   message the email was deleted TODO
      */
-    public String deleteEmail(String folder, String msg) {
+    public String deleteEmail(EmailType folder, EmailType msg) {
         try {
             determineMsg(msg)[0].setFlag(Flags.Flag.DELETED, true);
             determineFolder(folder).expunge();
@@ -367,7 +367,7 @@ public class EmailManager {
      * @param msg  the message to be responded to
      * @return message to indicate that email was sent TODO
      */
-    public String replyToEmail(String response, String msg) {
+    public String replyToEmail(String response, EmailType msg) {
         try { 
             Message replymsg = new MimeMessage(session);
             String to = InternetAddress.toString(determineMsg(msg)[0].getReplyTo());
