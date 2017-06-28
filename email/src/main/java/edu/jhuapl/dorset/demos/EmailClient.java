@@ -21,7 +21,17 @@ import edu.jhuapl.dorset.routing.SingleAgentRouter;
 public class EmailClient {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailClient.class);
-    private static EmailManager manager;
+    private EmailManager manager;
+    private static Scanner scan;
+
+    /**
+     * EmailClient
+     *
+     * @param manager   EmailManager object
+     */
+    public EmailClient(EmailManager manager) {
+        this.manager = manager;
+    }
 
     /**
      * Main method in Email Client
@@ -29,39 +39,49 @@ public class EmailClient {
      * @param args   command line arguments
      */
     public static void main(String[] args) {
-
-        Scanner scan = new Scanner(System.in);
+        scan = new Scanner(System.in);
         Config config = ConfigFactory.load();
-        manager = new EmailManager(config);
-        System.out.println("Inbox: " + manager.getCount(FolderType.INBOX));
+        EmailClient client = new EmailClient(new EmailManager(config));
+        client.run();
+        client.close();
+    }
 
-        try {
-            System.out.println("Type c to continue or q to quit");
-            while(scan.nextLine().equals("c")) {
-                while (manager.getCount(FolderType.INBOX) > 0) {
-                    Message msg = manager.getMessage(FolderType.INBOX);
-                    String text = getMessageText(msg);
-                    if (text.equals("error")) {
-                        manager.sendMessage("An error ocured while processing your response", msg);
-                        manager.copyEmail(FolderType.INBOX, FolderType.ERROR, msg);
-                        manager.deleteEmail(FolderType.INBOX, msg);
-                    }
-                    else {
-                        manager.sendMessage(processMessage(msg, text), msg);
-                        manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
-                    }
+    /**
+     * Process and respond to emails
+     */
+    private void run() {
+        System.out.println("Inbox: " + manager.getCount(FolderType.INBOX));
+        System.out.println("Type c to continue or q to quit");
+
+        while (scan.nextLine().equals("c")) {
+            while (manager.getCount(FolderType.INBOX) > 0) {
+                Message msg = manager.getMessage(FolderType.INBOX);
+                System.out.println("email to be read: ");
+                String text = manager.readEmail(msg);
+                if (text.equals("error")) {
+                    manager.sendMessage("An error ocured while processing your response", msg);
+                    manager.copyEmail(FolderType.INBOX, FolderType.ERROR, msg);
                     manager.deleteEmail(FolderType.INBOX, msg);
+                } else {
+                    manager.sendMessage(processMessage(msg, text), msg);
+                    manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
                 }
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    logger.error("Failed to sleep thread");
-                }
+                manager.deleteEmail(FolderType.INBOX, msg);
             }
-        } finally {
-            manager.close();
-            scan.close();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                logger.error("Failed to sleep thread");
+            }
         }
+    }
+
+    /**
+     * Close manager and scanner
+     */
+    private void close() {
+        manager.close();
+        scan.close();
     }
 
     /**
@@ -72,17 +92,6 @@ public class EmailClient {
      */
     private static Agent getAgent(String text) {
         return new DateTimeAgent();
-    }
-
-    /**
-     * Get text from the body of the message
-     *
-     * @param msg   the message to be read
-     * @return the message text
-     */
-    private static String getMessageText(Message msg) {
-        System.out.println("email to be read: ");
-        return manager.readEmail(msg);
     }
 
     /**
