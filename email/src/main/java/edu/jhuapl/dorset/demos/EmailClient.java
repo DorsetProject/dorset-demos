@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 The Johns Hopkins University Applied Physics Laboratory LLC
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.jhuapl.dorset.demos;
 
 import java.util.Scanner;
@@ -22,7 +38,7 @@ public class EmailClient {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailClient.class);
     private EmailManager manager;
-    private static Scanner scan;
+    private static Application app;
 
     /**
      * EmailClient
@@ -31,6 +47,9 @@ public class EmailClient {
      */
     public EmailClient(EmailManager manager) {
         this.manager = manager;
+        Agent agent = new DateTimeAgent();
+        Router router = new SingleAgentRouter(agent);
+        app = new Application(router);
     }
 
     /**
@@ -39,7 +58,6 @@ public class EmailClient {
      * @param args   command line arguments
      */
     public static void main(String[] args) {
-        scan = new Scanner(System.in);
         Config config = ConfigFactory.load();
         EmailClient client = new EmailClient(new EmailManager(config));
         client.run();
@@ -50,6 +68,8 @@ public class EmailClient {
      * Process and respond to emails
      */
     private void run() {
+        Scanner scan = new Scanner(System.in);
+
         System.out.println("Inbox: " + manager.getCount(FolderType.INBOX));
         System.out.println("Type c to continue or q to quit");
 
@@ -74,6 +94,7 @@ public class EmailClient {
                 logger.error("Failed to sleep thread");
             }
         }
+        scan.close(); 
     }
 
     /**
@@ -81,17 +102,7 @@ public class EmailClient {
      */
     private void close() {
         manager.close();
-        scan.close();
-    }
-
-    /**
-     * Get the agent the request should be sent to
-     *
-     * @param text   the email text
-     * @return Agent   the agent to send request to
-     */
-    private static Agent getAgent(String text) {
-        return new DateTimeAgent();
+        
     }
 
     /**
@@ -101,9 +112,6 @@ public class EmailClient {
      * @return the response from a Dorset agent
      */
     private static String processMessage(Message msg, String text) {
-        Agent agent = getAgent(text);
-        Router router = new SingleAgentRouter(agent);
-        Application app = new Application(router);
         Request request = new Request(text);
         Response response = app.process(request);
         return response.getText();

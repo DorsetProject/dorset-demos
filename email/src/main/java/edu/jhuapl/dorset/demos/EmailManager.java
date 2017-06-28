@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 The Johns Hopkins University Applied Physics Laboratory LLC
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.jhuapl.dorset.demos;
 
 import java.io.IOException;
@@ -41,6 +57,9 @@ public class EmailManager {
     private Folder errorFolder;
     private Folder completeFolder;
     private String response = "";
+    private static final String ENCAPSULATED = "message/rfc822";
+    private static final String TEXT_PLAIN = "text/plain";
+    private static final String MULTIPART = "multipart/*";
     
     /**
     * EmailManager Constructor
@@ -152,6 +171,7 @@ public class EmailManager {
      * 
      * @param msg  the message to be marked seen
      */
+    //not currently being used, but may be needed for threading
     public void markSeen(Message msg) {
         try {
             msg.setFlag(Flags.Flag.SEEN, true);
@@ -189,17 +209,18 @@ public class EmailManager {
      * @param part   the email body to be retrieved
      * @return response   the text of an email
      */
-    public String writePart(Part part) {
+    private String writePart(Part part) {
         try {
-            if (part.isMimeType("text/plain")) {
+            if (part.isMimeType(TEXT_PLAIN)) {
                 response += ((String) part.getContent());
-            } else if (part.isMimeType("multipart/*")) {
+            } else if (part.isMimeType(MULTIPART)) {
                 Multipart mp = (Multipart) part.getContent();
                 int count = mp.getCount();
                 for (int n = 0; n < count; n++) {
-                    String text = (writePart(mp.getBodyPart(n)));
+                    @SuppressWarnings("unused")
+                    String unusedText = (writePart(mp.getBodyPart(n)));
                 }
-            } else if (part.isMimeType("message/rfc822")) {
+            } else if (part.isMimeType(ENCAPSULATED)) {
                 response += writePart((Part) part.getContent());
             }
             return response;
@@ -210,7 +231,6 @@ public class EmailManager {
             logger.error("Failed to fetch email body");
             return "error";
         }
-
     }
 
     /**
