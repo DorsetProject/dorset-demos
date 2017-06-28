@@ -76,12 +76,10 @@ public class EmailClient {
         while (scan.nextLine().equals("c")) {
             while (manager.getCount(FolderType.INBOX) > 0) {
                 Message msg = manager.getMessage(FolderType.INBOX);
-                System.out.println("email to be read: ");
                 String text = manager.readEmail(msg);
                 if (text.equals("error")) {
                     manager.sendMessage("An error ocured while processing your response", msg);
                     manager.copyEmail(FolderType.INBOX, FolderType.ERROR, msg);
-                    manager.deleteEmail(FolderType.INBOX, msg);
                 } else {
                     manager.sendMessage(processMessage(msg, text), msg);
                     manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
@@ -90,7 +88,7 @@ public class EmailClient {
             }
             try {
                 Thread.sleep(2000);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException exception) {
                 logger.error("Failed to sleep thread");
             }
         }
@@ -101,8 +99,7 @@ public class EmailClient {
      * Close manager and scanner
      */
     private void close() {
-        manager.close();
-        
+        manager.close();  
     }
 
     /**

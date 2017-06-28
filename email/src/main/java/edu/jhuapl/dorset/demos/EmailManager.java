@@ -45,11 +45,14 @@ public class EmailManager {
     private static final String PASSWORD_KEY = "password";
     private static final String MAIL_STORE_TYPE_KEY = "mailStoreType";
     private static final String HOST_KEY = "host";
+    private static final String FROM_KEY = "from";
+
 
     private String user;
     private String password;
     private String mailStoreType;
     private String host;
+    private String from;
     
     private Session session;
     private Store store;
@@ -72,6 +75,7 @@ public class EmailManager {
         password = config.getString(PASSWORD_KEY);
         mailStoreType = config.getString(MAIL_STORE_TYPE_KEY);
         host = config.getString(HOST_KEY); 
+        from = config.getString(FROM_KEY);
         Properties prop = extractProperties(config);
         try {
             session = Session.getDefaultInstance(prop);
@@ -79,7 +83,7 @@ public class EmailManager {
             store.connect(host, user, password);
             initFolders();
             inboxFolder.open(Folder.READ_WRITE);
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to start email session");
         }
     }
@@ -98,7 +102,7 @@ public class EmailManager {
         return prop;
     }
     /**
-     * Retrieve folders and create them if they do not already exist
+     * Get folders and create them if they do not already exist
      */
     private void initFolders() {
         try {
@@ -111,13 +115,13 @@ public class EmailManager {
             inboxFolder = store.getFolder(FolderType.INBOX.getValue());
             errorFolder = store.getFolder(FolderType.ERROR.getValue());
             completeFolder = store.getFolder(FolderType.COMPLETE.getValue());
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to initialize folders");
         }
     }
 
     /**
-     * Determine which folder should be accessed
+     * Get folder
      * 
      * @param folder   the folder to be returned. Expressed by an integer value
      * @return Folder   the folder to be accessed
@@ -136,7 +140,7 @@ public class EmailManager {
     }
 
     /**
-     * Return number of messages in specified folder
+     * Get number of messages in specified folder
      * 
      * @param folder   the folder to look in
      * @return the number of messages left in folder
@@ -145,7 +149,7 @@ public class EmailManager {
         try {
             System.out.println(getFolder(folder));
             return getFolder(folder).getMessageCount();
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to count emails");
             return -1;
         }
@@ -160,7 +164,7 @@ public class EmailManager {
     public Message getMessage(FolderType folder) {
         try {
             return getFolder(folder).getMessage(1);
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to retrieve email");
             return null;
         }  
@@ -175,7 +179,7 @@ public class EmailManager {
     public void markSeen(Message msg) {
         try {
             msg.setFlag(Flags.Flag.SEEN, true);
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to mark email as seen");
         }
     }
@@ -197,7 +201,7 @@ public class EmailManager {
             msgContent += writePart(msg);
             System.out.println("Email reads: " + msgContent);
             return msgContent;
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to fetch email body");
             return "Error occured while reading email";
         }
@@ -224,10 +228,10 @@ public class EmailManager {
                 response += writePart((Part) part.getContent());
             }
             return response;
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to fetch email body");
             return "error";
-        } catch (IOException e) {
+        } catch (IOException exception) {
             logger.error("Failed to fetch email body");
             return "error";
         }
@@ -242,10 +246,8 @@ public class EmailManager {
     public void sendMessage(String response, Message msg) {
         try {
             Message replymsg = new MimeMessage(session);
-            String to = InternetAddress.toString(msg.getReplyTo());
-
             replymsg = (MimeMessage) msg.reply(false);
-            replymsg.setFrom(new InternetAddress(to));
+            replymsg.setFrom(new InternetAddress(from));
             replymsg.setText(response);
             replymsg.setReplyTo(msg.getReplyTo());
 
@@ -257,7 +259,7 @@ public class EmailManager {
                 transport.close();
             }
             System.out.println("email sent");
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to rely to email");
         }
     }
@@ -273,7 +275,7 @@ public class EmailManager {
         try {
             Message[] messages = {msg};
             getFolder(fromFolder).copyMessages(messages, getFolder(toFolder));
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to copy email");
         }
     }
@@ -290,20 +292,19 @@ public class EmailManager {
             getFolder(folder).expunge();
             getFolder(folder).close(false);
             getFolder(folder).open(Folder.READ_WRITE);
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to delete email");
         }
     }
 
     /**
      * Close inbox folder and store
-     * 
      */
     public void close() {
         try {
             inboxFolder.close(false);
             store.close();
-        } catch (MessagingException e) {
+        } catch (MessagingException exception) {
             logger.error("Failed to close folders and store");
         }
     }
