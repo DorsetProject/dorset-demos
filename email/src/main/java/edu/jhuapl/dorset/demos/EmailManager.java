@@ -47,7 +47,6 @@ public class EmailManager {
     private static final String HOST_KEY = "host";
     private static final String FROM_KEY = "from";
 
-
     private String user;
     private String password;
     private String mailStoreType;
@@ -59,7 +58,7 @@ public class EmailManager {
     private Folder inboxFolder;
     private Folder errorFolder;
     private Folder completeFolder;
-    private String response = "";
+    private static final String SMTP = "smtp";
     private static final String ENCAPSULATED = "message/rfc822";
     private static final String TEXT_PLAIN = "text/plain";
     private static final String MULTIPART = "multipart/*";
@@ -147,7 +146,6 @@ public class EmailManager {
      */
     public int getCount(FolderType folder) {
         try {
-            System.out.println(getFolder(folder));
             return getFolder(folder).getMessageCount();
         } catch (MessagingException exception) {
             logger.error("Failed to count emails");
@@ -191,41 +189,30 @@ public class EmailManager {
      * @return msgContent  the text the email
      */
     public String readEmail(Message msg) {
-        try {
-            System.out.println("---------------------------------");
-            System.out.println("From: " + msg.getFrom()[0]);
-            System.out.println("Subject: " + msg.getSubject());
-    
-            String msgContent = "";
-            response = "";
-            msgContent += writePart(msg);
-            System.out.println("Email reads: " + msgContent);
-            return msgContent;
-        } catch (MessagingException exception) {
-            logger.error("Failed to fetch email body");
-            return "Error occured while reading email";
-        }
+        String msgContent = "";
+        msgContent += getText(msg);
+        return msgContent;
     }
 
     /**
-     * Retrieve the body of an email
+     * Get the text of an email
      * 
      * @param part   the email body to be retrieved
      * @return response   the text of an email
      */
-    private String writePart(Part part) {
+    private String getText(Part part) {
         try {
+            String response = "";
             if (part.isMimeType(TEXT_PLAIN)) {
                 response += ((String) part.getContent());
             } else if (part.isMimeType(MULTIPART)) {
                 Multipart mp = (Multipart) part.getContent();
                 int count = mp.getCount();
                 for (int n = 0; n < count; n++) {
-                    @SuppressWarnings("unused")
-                    String unusedText = (writePart(mp.getBodyPart(n)));
+                   response += (getText(mp.getBodyPart(n)));
                 }
             } else if (part.isMimeType(ENCAPSULATED)) {
-                response += writePart((Part) part.getContent());
+                response += getText((Part) part.getContent());
             }
             return response;
         } catch (MessagingException exception) {
@@ -251,14 +238,13 @@ public class EmailManager {
             replymsg.setText(response);
             replymsg.setReplyTo(msg.getReplyTo());
 
-            Transport transport = session.getTransport("smtp");
+            Transport transport = session.getTransport(SMTP);
             try {
                 transport.connect(user, password);
                 transport.sendMessage(replymsg, replymsg.getAllRecipients());
             } finally {
                 transport.close();
             }
-            System.out.println("email sent");
         } catch (MessagingException exception) {
             logger.error("Failed to rely to email");
         }
