@@ -1,15 +1,13 @@
 package edu.jhuapl.dorset.demos;
 
-public enum EmailType {
+public enum FolderType {
 
     INBOX("INBOX"),
     COMPLETE("Complete"),
-    ERROR("Error"),
-    UNREAD("unread email"),
-    READ("read email");
+    ERROR("Error");
     
     private final String type;
-    private EmailType(String type) {
+    private FolderType(String type) {
         this.type = type;
     }
 
@@ -28,8 +26,8 @@ public enum EmailType {
      * @param value   the String value of the email type
      * @return the email type
      */
-    public static EmailType getType(String value) {
-        for (EmailType type : EmailType.values()) {
+    public static FolderType getType(String value) {
+        for (FolderType type : FolderType.values()) {
             if (type.getValue().equals(value)) {
                 return type;
             }

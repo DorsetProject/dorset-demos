@@ -1,7 +1,6 @@
 package edu.jhuapl.dorset.demos;
 
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.Properties;
 
 import javax.mail.Flags;
@@ -41,10 +40,6 @@ public class EmailManager {
     private Folder inboxFolder;
     private Folder errorFolder;
     private Folder completeFolder;
-    private Message[] unreadMessages = new Message[1];
-    private Message[] processingMessages = new Message[1];
-    private ArrayDeque<Message> handler = new ArrayDeque<Message>();
-    private static final int HOLDS_MESSAGES = 1;
     private String response = "";
     
     /**
@@ -59,11 +54,12 @@ public class EmailManager {
         mailStoreType = config.getString(MAIL_STORE_TYPE_KEY);
         host = config.getString(HOST_KEY); 
         Properties prop = extractProperties(config);
-        
         try {
             session = Session.getDefaultInstance(prop);
             store = session.getStore(mailStoreType);
             store.connect(host, user, password);
+            initFolders();
+            inboxFolder.open(Folder.READ_WRITE);
         } catch (MessagingException e) {
             logger.error("Failed to start email session");
         }
@@ -85,17 +81,17 @@ public class EmailManager {
     /**
      * Retrieve folders and create them if they do not already exist
      */
-    public void initFolders() {
+    private void initFolders() {
         try {
-            if (!store.getFolder(EmailType.ERROR.getValue()).exists()) {
-                store.getFolder(EmailType.ERROR.getValue()).create(HOLDS_MESSAGES);
+            if (!store.getFolder(FolderType.ERROR.getValue()).exists()) {
+                store.getFolder(FolderType.ERROR.getValue()).create(Folder.HOLDS_MESSAGES);
             }
-            if (!store.getFolder(EmailType.COMPLETE.getValue()).exists()) {
-                store.getFolder(EmailType.COMPLETE.getValue()).create(HOLDS_MESSAGES);
+            if (!store.getFolder(FolderType.COMPLETE.getValue()).exists()) {
+                store.getFolder(FolderType.COMPLETE.getValue()).create(Folder.HOLDS_MESSAGES);
             }
-            errorFolder = store.getFolder(EmailType.ERROR.getValue());
-            completeFolder = store.getFolder(EmailType.COMPLETE.getValue());
-            inboxFolder = store.getFolder(EmailType.INBOX.getValue());
+            inboxFolder = store.getFolder(FolderType.INBOX.getValue());
+            errorFolder = store.getFolder(FolderType.ERROR.getValue());
+            completeFolder = store.getFolder(FolderType.COMPLETE.getValue());
         } catch (MessagingException e) {
             logger.error("Failed to initialize folders");
         }
@@ -107,7 +103,7 @@ public class EmailManager {
      * @param folder   the folder to be returned. Expressed by an integer value
      * @return Folder   the folder to be accessed
      */
-    public Folder determineFolder(EmailType folder) {
+    private Folder getFolder(FolderType folder) {
         switch (folder) {
             case INBOX:
                 return inboxFolder;
@@ -121,109 +117,34 @@ public class EmailManager {
     }
 
     /**
-     * Determine which message array should be used
-     * 
-     * @param msg   the message to be accessed. Expressed by an integer value
-     * @return Message   the message to be used
-     */
-    public Message[] determineMsg(EmailType msg) {
-        switch (msg) {
-            case UNREAD:
-                return unreadMessages;
-            case READ:
-                return processingMessages;
-            default:
-                return null;
-        }
-    }
-
-    /**
-     * Open specified folder
-     * 
-     * @param folder   the folder to be opened. Expressed by an integer value  
-     */
-    public void openFolder(EmailType folder) {
-        try {
-            determineFolder(folder).open(Folder.READ_WRITE);
-        } catch (MessagingException e) {
-            logger.error("Failed to open folders");
-        }
-    }
-
-    /**
-     * Return whether specified folder is open or not
-     * 
-     * @param folder  the folder to be tested. Expressed by an integer value
-     * @return boolean   whether the folder is open or not
-     */
-    public boolean folderIsOpen(EmailType folder) {
-        return determineFolder(folder).isOpen();
-    }
-
-    /**
-     * Close specified folder
-     * 
-     * @param folder   the folder to be close. Expressed by an integer value
-     */
-    public void closeFolder(EmailType folder) {
-        try {
-            determineFolder(folder).close(false);
-        } catch (MessagingException e) {
-            logger.error("Failed to close folders");
-        }
-    }
-    
-    /**
-     * Close store
-     */
-    public void closeStore() {
-        try {
-            store.close();
-        } catch (MessagingException e) {
-            logger.error("Failed to close store");
-        }
-    }
-
-    /**
      * Return number of messages in specified folder
      * 
-     * @param folder   the folder to look in. Expressed by an integer value
-     * @return int value   messages left in folder
+     * @param folder   the folder to look in
+     * @return the number of messages left in folder
      */
-    public int getCount(EmailType folder) {
+    public int getCount(FolderType folder) {
         try {
-            return determineFolder(folder).getMessageCount();
+            System.out.println(getFolder(folder));
+            return getFolder(folder).getMessageCount();
         } catch (MessagingException e) {
             logger.error("Failed to count emails");
             return -1;
         }
     }
-
+    
     /**
-     * Assign the next email to be handled to a variable
+     * Get a message from a folder
      * 
-     * @param folder the folder message will be found in. Expressed by an integer value
-     * @param msg   the Message variable to populate
-     * @return boolean value   whether or not a message was available
+     * @param folder   the folder to retrieve a message from
+     * @return the message
      */
-    public boolean getEmail(EmailType folder, EmailType msg) {
+    public Message getMessage(FolderType folder) {
         try {
-            determineMsg(msg)[0] = determineFolder(folder).getMessage(1);
-            if (msg == EmailType.UNREAD) {
-                int counter = 1;
-                while (determineMsg(msg)[0].isSet(Flags.Flag.SEEN)) {
-                    determineMsg(msg)[0] = determineFolder(folder).getMessage(counter);
-                    counter++;
-                    if (counter > determineFolder(folder).getMessageCount()) {
-                        return false;
-                    }
-                }
-            }
-            return true;
+            return getFolder(folder).getMessage(1);
         } catch (MessagingException e) {
             logger.error("Failed to retrieve email");
-            return false;
-        }
+            return null;
+        }  
     }
     
     /**
@@ -231,65 +152,35 @@ public class EmailManager {
      * 
      * @param msg  the message to be marked seen
      */
-    public void markSeen(EmailType msg) {
+    public void markSeen(Message msg) {
         try {
-            determineMsg(msg)[0].setFlag(Flags.Flag.SEEN, true);
+            msg.setFlag(Flags.Flag.SEEN, true);
         } catch (MessagingException e) {
             logger.error("Failed to mark email as seen");
         }
     }
 
     /**
-     * Add an email to the queue
+     * Retrieve and return text from an email
      * 
-     * @param msg   the message to be added to the queue
+     * @param msg   the message to be read
+     * @return msgContent  the text the email
      */
-    public void addToQ(EmailType msg) {
-        handler.addLast(determineMsg(msg)[0]);
-    }
-
-    /**
-     * Determine if the queue is empty
-     * 
-     * @return boolean   whether the queue is empty
-     */
-    public boolean isQEmpty() {
-        return handler.isEmpty();
-    }
-
-    /**
-     * Remove email from the head of the queue
-     * 
-     * @param msg   the Message variable to assign the removed message to
-     */
-    public void removeFromQ(EmailType msg) {
-        determineMsg(msg)[0] = handler.removeFirst();
-    }
-
-    /**
-     * Retrieve and return text from the specified email
-     * 
-     * @param msg   the message to read. Expressed by an integer value
-     * @return msgContent  the text from the specified email   
-     */
-    public String readEmail(EmailType msg) {
+    public String readEmail(Message msg) {
         try {
-            Message mess = determineMsg(msg)[0];
             System.out.println("---------------------------------");
-            System.out.println("From: " + mess.getFrom()[0]);
-            System.out.println("Subject: " + mess.getSubject());
+            System.out.println("From: " + msg.getFrom()[0]);
+            System.out.println("Subject: " + msg.getSubject());
     
             String msgContent = "";
             response = "";
-            msgContent += writePart(mess);
-            System.out.println("Email reads:  \"" + msgContent + "\"");
-    
+            msgContent += writePart(msg);
+            System.out.println("Email reads: " + msgContent);
             return msgContent;
         } catch (MessagingException e) {
             logger.error("Failed to fetch email body");
             return "Error occured while reading email";
         }
-        
     }
 
     /**
@@ -314,12 +205,41 @@ public class EmailManager {
             return response;
         } catch (MessagingException e) {
             logger.error("Failed to fetch email body");
-            return "An error occured while processing your email.";
+            return "error";
         } catch (IOException e) {
             logger.error("Failed to fetch email body");
-            return "An error occured while processing your email.";
+            return "error";
         }
 
+    }
+
+    /**
+     * Send a reply to the specified email
+     *
+     * @param response   the text to be used for the body of the reply
+     * @param msg  the message to be responded to
+     */
+    public void sendMessage(String response, Message msg) {
+        try {
+            Message replymsg = new MimeMessage(session);
+            String to = InternetAddress.toString(msg.getReplyTo());
+
+            replymsg = (MimeMessage) msg.reply(false);
+            replymsg.setFrom(new InternetAddress(to));
+            replymsg.setText(response);
+            replymsg.setReplyTo(msg.getReplyTo());
+
+            Transport transport = session.getTransport("smtp");
+            try {
+                transport.connect(user, password);
+                transport.sendMessage(replymsg, replymsg.getAllRecipients());
+            } finally {
+                transport.close();
+            }
+            System.out.println("email sent");
+        } catch (MessagingException e) {
+            logger.error("Failed to rely to email");
+        }
     }
 
     /**
@@ -328,15 +248,13 @@ public class EmailManager {
      * @param fromFolder   the folder email is currently located in
      * @param toFolder   the folder email is going to be moved to
      * @param msg   the message to be moved
-     * @return message that email was moved TODO
      */
-    public String copyEmail(EmailType fromFolder, EmailType toFolder, EmailType msg) {
+    public void copyEmail(FolderType fromFolder, FolderType toFolder, Message msg) {
         try {
-            determineFolder(fromFolder).copyMessages(determineMsg(msg), determineFolder(toFolder));
-            return "email moved from " + fromFolder + " to " + toFolder;
+            Message[] messages = {msg};
+            getFolder(fromFolder).copyMessages(messages, getFolder(toFolder));
         } catch (MessagingException e) {
             logger.error("Failed to copy email");
-            return "Error occured while moving email";
         }
     }
 
@@ -345,49 +263,28 @@ public class EmailManager {
      * 
      * @param folder   the folder the email should be deleted from
      * @param msg   the message to be deleted
-     * @return   message the email was deleted TODO
      */
-    public String deleteEmail(EmailType folder, EmailType msg) {
+    public void deleteEmail(FolderType folder, Message msg) {
         try {
-            determineMsg(msg)[0].setFlag(Flags.Flag.DELETED, true);
-            determineFolder(folder).expunge();
-            determineFolder(folder).close(false);
-            determineFolder(folder).open(Folder.READ_WRITE);
-            return "email deleted from " + folder;
+            msg.setFlag(Flags.Flag.DELETED, true);
+            getFolder(folder).expunge();
+            getFolder(folder).close(false);
+            getFolder(folder).open(Folder.READ_WRITE);
         } catch (MessagingException e) {
             logger.error("Failed to delete email");
-            return "Error occured while deleting email";
         }
     }
 
     /**
-     * Send a reply to the specified email
+     * Close inbox folder and store
      * 
-     * @param response   the text to be used for the body of the reply
-     * @param msg  the message to be responded to
-     * @return message to indicate that email was sent TODO
      */
-    public String replyToEmail(String response, EmailType msg) {
-        try { 
-            Message replymsg = new MimeMessage(session);
-            String to = InternetAddress.toString(determineMsg(msg)[0].getReplyTo());
-    
-            replymsg = (MimeMessage) determineMsg(msg)[0].reply(false);
-            replymsg.setFrom(new InternetAddress(to));
-            replymsg.setText(response);
-            replymsg.setReplyTo(determineMsg(msg)[0].getReplyTo());
-    
-            Transport transport = session.getTransport("smtp");
-            try {
-                transport.connect(user, password);
-                transport.sendMessage(replymsg, replymsg.getAllRecipients());
-            } finally {
-                transport.close();
-            }
-            return "email sent";
+    public void close() {
+        try {
+            inboxFolder.close(false);
+            store.close();
         } catch (MessagingException e) {
-            logger.error("Failed to rely to email");
-            return "Error occured while sending email";
+            logger.error("Failed to close folders and store");
         }
     }
 }
