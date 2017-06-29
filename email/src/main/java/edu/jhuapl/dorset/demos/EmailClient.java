@@ -81,7 +81,7 @@ public class EmailClient {
                     manager.sendMessage("An error ocured while processing your response", msg);
                     manager.copyEmail(FolderType.INBOX, FolderType.ERROR, msg);
                 } else {
-                    manager.sendMessage(processMessage(msg, text), msg);
+                    manager.sendMessage(processMessage(text), msg);
                     manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
                 }
                 manager.deleteEmail(FolderType.INBOX, msg);
@@ -96,19 +96,19 @@ public class EmailClient {
     }
 
     /**
-     * Close manager and scanner
+     * Close EmailManager objects
      */
     private void close() {
         manager.close();  
     }
 
     /**
-     * Access a Dorset agent and process the message text
+     * Access a Dorset agent and process the email text
      *
-     * @param msg   the message to be read
+     * @param text   the text sent to a Dorset agent
      * @return the response from a Dorset agent
      */
-    private static String processMessage(Message msg, String text) {
+    private static String processMessage(String text) {
         Request request = new Request(text);
         Response response = app.process(request);
         return response.getText();

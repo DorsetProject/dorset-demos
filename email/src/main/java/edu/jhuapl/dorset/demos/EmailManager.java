@@ -122,8 +122,8 @@ public class EmailManager {
     /**
      * Get folder
      * 
-     * @param folder   the folder to be returned. Expressed by an integer value
-     * @return Folder   the folder to be accessed
+     * @param folder   the folder to be returned
+     * @return the folder to be accessed
      */
     private Folder getFolder(FolderType folder) {
         switch (folder) {
@@ -139,10 +139,10 @@ public class EmailManager {
     }
 
     /**
-     * Get number of messages in specified folder
+     * Get number of emails in a folder
      * 
      * @param folder   the folder to look in
-     * @return the number of messages left in folder
+     * @return the number of emails left in the folder
      */
     public int getCount(FolderType folder) {
         try {
@@ -154,10 +154,10 @@ public class EmailManager {
     }
     
     /**
-     * Get a message from a folder
+     * Get an email from a folder
      * 
-     * @param folder   the folder to retrieve a message from
-     * @return the message
+     * @param folder   the folder to retrieve an email from
+     * @return the email
      */
     public Message getMessage(FolderType folder) {
         try {
@@ -171,7 +171,7 @@ public class EmailManager {
     /**
      * Mark an email as seen
      * 
-     * @param msg  the message to be marked seen
+     * @param msg  the email to be marked seen
      */
     //not currently being used, but may be needed for threading
     public void markSeen(Message msg) {
@@ -185,36 +185,34 @@ public class EmailManager {
     /**
      * Retrieve and return text from an email
      * 
-     * @param msg   the message to be read
-     * @return msgContent  the text the email
+     * @param msg   the email to be read
+     * @return the text the email
      */
     public String readEmail(Message msg) {
-        String msgContent = "";
-        msgContent += getText(msg);
-        return msgContent;
+        return getText(msg);
     }
 
     /**
      * Get the text of an email
      * 
      * @param part   the email body to be retrieved
-     * @return response   the text of an email
+     * @return text  the text of the email
      */
     private String getText(Part part) {
         try {
-            String response = "";
+            String text = "";
             if (part.isMimeType(TEXT_PLAIN)) {
-                response += ((String) part.getContent());
+                text += ((String) part.getContent());
             } else if (part.isMimeType(MULTIPART)) {
                 Multipart mp = (Multipart) part.getContent();
                 int count = mp.getCount();
                 for (int n = 0; n < count; n++) {
-                   response += (getText(mp.getBodyPart(n)));
+                    text += (getText(mp.getBodyPart(n)));
                 }
             } else if (part.isMimeType(ENCAPSULATED)) {
-                response += getText((Part) part.getContent());
+                text += getText((Part) part.getContent());
             }
-            return response;
+            return text;
         } catch (MessagingException exception) {
             logger.error("Failed to fetch email body");
             return "error";
@@ -228,7 +226,7 @@ public class EmailManager {
      * Send a reply to the specified email
      *
      * @param response   the text to be used for the body of the reply
-     * @param msg  the message to be responded to
+     * @param msg  the email to be responded to
      */
     public void sendMessage(String response, Message msg) {
         try {
@@ -253,9 +251,9 @@ public class EmailManager {
     /**
      * Copy specified email from one folder to another
      * 
-     * @param fromFolder   the folder email is currently located in
-     * @param toFolder   the folder email is going to be moved to
-     * @param msg   the message to be moved
+     * @param fromFolder   the folder the email is currently located in
+     * @param toFolder   the folder the email is going to be moved to
+     * @param msg   the email to be moved
      */
     public void copyEmail(FolderType fromFolder, FolderType toFolder, Message msg) {
         try {
@@ -267,10 +265,10 @@ public class EmailManager {
     }
 
     /**
-     * Delete specified email from a folder
+     * Delete email from a folder
      * 
      * @param folder   the folder the email should be deleted from
-     * @param msg   the message to be deleted
+     * @param msg   the email to be deleted
      */
     public void deleteEmail(FolderType folder, Message msg) {
         try {
