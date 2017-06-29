@@ -16,9 +16,11 @@
  */
 package edu.jhuapl.dorset.demos;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 import javax.mail.Message;
+import javax.mail.MessagingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,50 +58,75 @@ public class EmailClient {
      * Main method in Email Client
      * 
      * @param args   command line arguments
+     * @throws MessagingException   if cannot connect to server
+     * @throws IOException   if errors occur while processing email
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws MessagingException, IOException {
         Config config = ConfigFactory.load();
-        EmailClient client = new EmailClient(new EmailManager(config));
+        EmailClient client;
+        try {
+            client = new EmailClient(new EmailManager(config));
+        } catch (MessagingException e) {
+            throw new MessagingException("Could not connect to server. Check your connection and configurations. Quitting now.", e);
+        }
         client.run();
         client.close();
     }
 
     /**
      * Process and respond to emails
+     *
+     * @throws MessagingException   if errors occur while processing email
+     * @throws IOException   if errors occur while processing email
      */
-    private void run() {
+    private void run() throws MessagingException, IOException {
         Scanner scan = new Scanner(System.in);
 
-        System.out.println("Inbox: " + manager.getCount(FolderType.INBOX));
-        System.out.println("Type c to continue or q to quit");
+        try {
+            System.out.println("Inbox: " + manager.getCount(FolderType.INBOX));
+            System.out.println("Type c to continue or q to quit: ");
 
-        while (scan.nextLine().equals("c")) {
-            while (manager.getCount(FolderType.INBOX) > 0) {
-                Message msg = manager.getMessage(FolderType.INBOX);
-                String text = manager.readEmail(msg);
-                if (text.equals("error")) {
-                    manager.sendMessage("An error ocured while processing your response", msg);
-                    manager.copyEmail(FolderType.INBOX, FolderType.ERROR, msg);
-                } else {
-                    manager.sendMessage(processMessage(text), msg);
-                    manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
+            while (scan.nextLine().equals("c")) {
+                while (manager.getCount(FolderType.INBOX) > 0) {
+                    Message msg = manager.getMessage(FolderType.INBOX);
+                    String text = manager.readEmail(msg);
+                    if (text == null) { 
+                        manager.sendMessage("An error ocured while processing your response", msg);
+                        manager.copyEmail(FolderType.INBOX, FolderType.ERROR, msg);
+                    } else {
+                        manager.sendMessage(processMessage(text), msg);
+                        manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
+                    }
+                    manager.deleteEmail(FolderType.INBOX, msg);
                 }
-                manager.deleteEmail(FolderType.INBOX, msg);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException exception) {
+                    logger.error("Thread was interrupted");
+                }
+                System.out.println("continue/quit?: ");
             }
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException exception) {
-                logger.error("Failed to sleep thread");
-            }
+        } catch (MessagingException e) {
+            close();
+            throw new MessagingException("Fatal error has occured. Quitting now.", e);
+        } catch (IOException e) {
+            close();
+            throw new IOException("Fatal error has occured. Quitting now.", e);
+        } finally {
+            scan.close();
         }
-        scan.close(); 
     }
 
     /**
      * Close EmailManager objects
+     * @throws MessagingException   if cannot close properly
      */
-    private void close() {
-        manager.close();  
+    private void close() throws MessagingException {
+        try {
+            manager.close();
+        } catch (MessagingException e) {
+            throw new MessagingException("Unable to close properly. Quitting now", e);
+        }  
     }
 
     /**

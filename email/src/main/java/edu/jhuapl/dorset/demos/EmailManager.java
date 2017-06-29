@@ -67,8 +67,9 @@ public class EmailManager {
     * EmailManager Constructor
     * 
     * @param config  Configuration object that stores mail server information, username, and password
+    * @throws MessagingException   if connection cannot be established
     */
-    public EmailManager(Config config) {
+    public EmailManager(Config config) throws MessagingException {
         
         user = config.getString(USERNAME_KEY);
         password = config.getString(PASSWORD_KEY);
@@ -82,8 +83,8 @@ public class EmailManager {
             store.connect(host, user, password);
             initFolders();
             inboxFolder.open(Folder.READ_WRITE);
-        } catch (MessagingException exception) {
-            logger.error("Failed to start email session");
+        } catch (MessagingException e) {
+            throw new MessagingException("Failed to set up connection", e);
         }
     }
     
@@ -102,8 +103,9 @@ public class EmailManager {
     }
     /**
      * Get folders and create them if they do not already exist
+     * @throws MessagingException   if folders cannot be initialized
      */
-    private void initFolders() {
+    private void initFolders() throws MessagingException {
         try {
             if (!store.getFolder(FolderType.ERROR.getValue()).exists()) {
                 store.getFolder(FolderType.ERROR.getValue()).create(Folder.HOLDS_MESSAGES);
@@ -114,8 +116,9 @@ public class EmailManager {
             inboxFolder = store.getFolder(FolderType.INBOX.getValue());
             errorFolder = store.getFolder(FolderType.ERROR.getValue());
             completeFolder = store.getFolder(FolderType.COMPLETE.getValue());
-        } catch (MessagingException exception) {
-            logger.error("Failed to initialize folders");
+        } catch (MessagingException e) {
+            store.close();
+            throw new MessagingException("Failed to initialize folders", e);
         }
     }
 
@@ -143,13 +146,14 @@ public class EmailManager {
      * 
      * @param folder   the folder to look in
      * @return the number of emails left in the folder
+     * @throws MessagingException   if folder contents cannot be accessed
      */
-    public int getCount(FolderType folder) {
+    public int getCount(FolderType folder) throws MessagingException {
         try {
             return getFolder(folder).getMessageCount();
-        } catch (MessagingException exception) {
-            logger.error("Failed to count emails");
-            return -1;
+        } catch (MessagingException e) {
+            close();
+            throw new MessagingException("Failed access folder contents", e);
         }
     }
     
@@ -158,13 +162,14 @@ public class EmailManager {
      * 
      * @param folder   the folder to retrieve an email from
      * @return the email
+     * @throws MessagingException   if email cannot be retrieved
      */
-    public Message getMessage(FolderType folder) {
+    public Message getMessage(FolderType folder) throws MessagingException {
         try {
             return getFolder(folder).getMessage(1);
-        } catch (MessagingException exception) {
-            logger.error("Failed to retrieve email");
-            return null;
+        } catch (MessagingException e) {
+            close();
+            throw new MessagingException("Failed to retrieve email", e);
         }  
     }
     
@@ -172,13 +177,14 @@ public class EmailManager {
      * Mark an email as seen
      * 
      * @param msg  the email to be marked seen
+     * @throws MessagingException   if email cannot be properly marked
      */
     //not currently being used, but may be needed for threading
-    public void markSeen(Message msg) {
+    public void markSeen(Message msg) throws MessagingException {
         try {
             msg.setFlag(Flags.Flag.SEEN, true);
-        } catch (MessagingException exception) {
-            logger.error("Failed to mark email as seen");
+        } catch (MessagingException e) {
+            throw new MessagingException("Failed to mark email as seen", e);
         }
     }
 
@@ -187,8 +193,10 @@ public class EmailManager {
      * 
      * @param msg   the email to be read
      * @return the text the email
+     * @throws MessagingException   if email cannot be accessed
+     * @throws IOException   if email cannot be accessed
      */
-    public String readEmail(Message msg) {
+    public String readEmail(Message msg) throws MessagingException, IOException {
         return getText(msg);
     }
 
@@ -197,8 +205,10 @@ public class EmailManager {
      * 
      * @param part   the email body to be retrieved
      * @return text  the text of the email
+     * @throws MessagingException   if mime type cannot be accessed
+     * @throws IOException   if email content cannot be accessed
      */
-    private String getText(Part part) {
+    private String getText(Part part) throws MessagingException, IOException {
         try {
             String text = "";
             if (part.isMimeType(TEXT_PLAIN)) {
@@ -212,13 +222,14 @@ public class EmailManager {
             } else if (part.isMimeType(ENCAPSULATED)) {
                 text += getText((Part) part.getContent());
             }
+            logger.info("email reads: " + text);
             return text;
-        } catch (MessagingException exception) {
-            logger.error("Failed to fetch email body");
-            return "error";
-        } catch (IOException exception) {
-            logger.error("Failed to fetch email body");
-            return "error";
+        } catch (MessagingException e) {
+            close();
+            throw new MessagingException("Failed to read email body", e);
+        } catch (IOException e) {
+            close();
+            throw new IOException("Failed to read email body", e);
         }
     }
 
@@ -227,9 +238,11 @@ public class EmailManager {
      *
      * @param response   the text to be used for the body of the reply
      * @param msg  the email to be responded to
+     * @throws MessagingException   if rely cannot be sent
      */
-    public void sendMessage(String response, Message msg) {
+    public void sendMessage(String response, Message msg) throws MessagingException {
         try {
+            logger.info("response reads: " + response);
             Message replymsg = new MimeMessage(session);
             replymsg = (MimeMessage) msg.reply(false);
             replymsg.setFrom(new InternetAddress(from));
@@ -243,8 +256,9 @@ public class EmailManager {
             } finally {
                 transport.close();
             }
-        } catch (MessagingException exception) {
-            logger.error("Failed to rely to email");
+        } catch (MessagingException e) {
+            close();
+            throw new MessagingException("Failed to rely to email", e);
         }
     }
 
@@ -254,13 +268,15 @@ public class EmailManager {
      * @param fromFolder   the folder the email is currently located in
      * @param toFolder   the folder the email is going to be moved to
      * @param msg   the email to be moved
+     * @throws MessagingException   if email cannot be copied
      */
-    public void copyEmail(FolderType fromFolder, FolderType toFolder, Message msg) {
+    public void copyEmail(FolderType fromFolder, FolderType toFolder, Message msg) throws MessagingException {
         try {
             Message[] messages = {msg};
             getFolder(fromFolder).copyMessages(messages, getFolder(toFolder));
-        } catch (MessagingException exception) {
-            logger.error("Failed to copy email");
+        } catch (MessagingException e) {
+            close();
+            throw new MessagingException("Failed to copy email from " + fromFolder + " to " + toFolder, e);
         }
     }
 
@@ -269,27 +285,29 @@ public class EmailManager {
      * 
      * @param folder   the folder the email should be deleted from
      * @param msg   the email to be deleted
+     * @throws MessagingException   if email cannot be deleted
      */
-    public void deleteEmail(FolderType folder, Message msg) {
+    public void deleteEmail(FolderType folder, Message msg) throws MessagingException {
         try {
             msg.setFlag(Flags.Flag.DELETED, true);
             getFolder(folder).expunge();
             getFolder(folder).close(false);
             getFolder(folder).open(Folder.READ_WRITE);
-        } catch (MessagingException exception) {
-            logger.error("Failed to delete email");
+        } catch (MessagingException e) {
+            throw new MessagingException("Failed to delete email", e);
         }
     }
 
     /**
      * Close inbox folder and store
+     * @throws MessagingException   if folders or store cannot be closed
      */
-    public void close() {
+    public void close() throws MessagingException {
         try {
             inboxFolder.close(false);
             store.close();
-        } catch (MessagingException exception) {
-            logger.error("Failed to close folders and store");
+        } catch (MessagingException e) {
+            throw new MessagingException("Failed to close folders and store", e);
         }
     }
 }
