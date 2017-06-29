@@ -86,7 +86,7 @@ public class EmailClient {
             System.out.println("Inbox: " + manager.getCount(FolderType.INBOX));
             System.out.println("Type c to continue or q to quit: ");
 
-            while (scan.nextLine().equals("c")) {
+            while (!scan.nextLine().equals("q")) {
                 while (manager.getCount(FolderType.INBOX) > 0) {
                     Message msg = manager.getMessage(FolderType.INBOX);
                     String text = manager.readEmail(msg);
@@ -98,6 +98,7 @@ public class EmailClient {
                         manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
                     }
                     manager.deleteEmail(FolderType.INBOX, msg);
+                    //TODO need to do something with true/false return value
                 }
                 try {
                     Thread.sleep(2000);
@@ -106,12 +107,9 @@ public class EmailClient {
                 }
                 System.out.println("continue/quit?: ");
             }
-        } catch (MessagingException e) {
+        } catch (MessagingException  e) {
             close();
             throw new MessagingException("Fatal error has occured. Quitting now.", e);
-        } catch (IOException e) {
-            close();
-            throw new IOException("Fatal error has occured. Quitting now.", e);
         } finally {
             scan.close();
         }
@@ -122,11 +120,7 @@ public class EmailClient {
      * @throws MessagingException   if cannot close properly
      */
     private void close() throws MessagingException {
-        try {
-            manager.close();
-        } catch (MessagingException e) {
-            throw new MessagingException("Unable to close properly. Quitting now", e);
-        }  
+        manager.close();  
     }
 
     /**
