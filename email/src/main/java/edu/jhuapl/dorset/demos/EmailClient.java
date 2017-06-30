@@ -16,8 +16,6 @@
  */
 package edu.jhuapl.dorset.demos;
 
-import java.util.Scanner;
-
 import javax.mail.Message;
 import javax.mail.MessagingException;
 
@@ -81,13 +79,13 @@ public class EmailClient {
      * @throws MessagingException   if errors occur while processing email
      */
     private void run() throws MessagingException {
-        Scanner scan = new Scanner(System.in);
 
         try {
-            System.out.println("Inbox: " + manager.getCount(FolderType.INBOX));
-            System.out.println("Type c to continue or q to quit: ");
-
-            while (!scan.nextLine().equals("q")) {
+            System.out.println("Running the Email Client. Press Control-C to quit. \nMessages in Inbox: " + manager.getCount(FolderType.INBOX));
+            while (true) {
+                if (manager.getCount(FolderType.INBOX) > 0) {
+                    logger.info("Inbox contains " + manager.getCount(FolderType.INBOX) + " messages");
+                }
                 while (manager.getCount(FolderType.INBOX) > 0) {
                     Message msg = manager.getMessage(FolderType.INBOX);
                     String text = manager.readEmail(msg);
@@ -100,12 +98,10 @@ public class EmailClient {
                 } catch (InterruptedException exception) {
                     logger.error("Thread was interrupted");
                 }
-                System.out.println("continue/quit?: ");
             }
         } catch (MessagingException  e) {
             throw new MessagingException("Fatal error has occured. Quitting now.", e);
         } finally {
-            scan.close();
         }
     }
 
@@ -127,6 +123,7 @@ public class EmailClient {
         Response response = app.process(request);
         String reply = response.getText();
         if (reply == null) {
+            logger.info("No response from Dorset Agent to: " + text);
             reply = "Sorry, we could not understand your request. \nTry asking about the date or time:"
                             + "\nEx) \"What is the time?\"";
         }
