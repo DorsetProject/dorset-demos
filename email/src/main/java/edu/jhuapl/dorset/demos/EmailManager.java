@@ -90,6 +90,7 @@ public class EmailManager {
             initFolders();
             inboxFolder.open(Folder.READ_WRITE);
         } catch (MessagingException e) {
+            store.close();
             throw new MessagingException("Failed to initialize and open folder");
         }
     }
@@ -124,7 +125,7 @@ public class EmailManager {
     }
 
     /**
-     * Get folder
+     * Get a folder
      * 
      * @param folder   the folder to be returned
      * @return the folder to be accessed
@@ -137,15 +138,12 @@ public class EmailManager {
                 return errorFolder;
             case COMPLETE:
                 return completeFolder;
-            default:
-                //TODO throw an error here instead of returning null
-                return null;
-                //throw new MessagingException(folder.getValue() + "is an invalid Folder Type");
         }
+        return null;
     }
 
     /**
-     * Get number of emails in a folder
+     * Get the number of emails in a folder
      * 
      * @param folder   the folder to look in
      * @return the number of emails left in the folder
@@ -155,7 +153,7 @@ public class EmailManager {
         try {
             return getFolder(folder).getMessageCount();
         } catch (MessagingException e) {
-            throw new MessagingException("Failed access " + folder + " folder contents", e);
+            throw new MessagingException("Failed to access " + folder + " folder contents", e);
         }
     }
     
@@ -170,7 +168,6 @@ public class EmailManager {
         try {
             return getFolder(folder).getMessage(1);
         } catch (MessagingException e) {
-            close();
             throw new MessagingException("Failed to retrieve email from " + folder + "folder", e);
         }  
     }
@@ -230,25 +227,24 @@ public class EmailManager {
     }
 
     /**
-     * Send a reply to the specified email
+     * Send a reply to an email
      *
      * @param response   the text to be used for the body of the reply
      * @param msg  the email to be responded to
-     * @throws MessagingException   if rely cannot be sent
+     * @throws MessagingException   if reply cannot be sent
      */
     public void sendMessage(String response, Message msg) throws MessagingException {
         try {
             logger.info("response reads: " + response);
-            Message replymsg = new MimeMessage(session);
-            replymsg = (MimeMessage) msg.reply(false);
-            replymsg.setFrom(new InternetAddress(from));
-            replymsg.setText(response);
-            replymsg.setReplyTo(msg.getReplyTo());
+            Message replyMsg = (MimeMessage) msg.reply(false);
+            replyMsg.setFrom(new InternetAddress(from));
+            replyMsg.setText(response);
+            replyMsg.setReplyTo(msg.getReplyTo());
 
             Transport transport = session.getTransport(SMTP);
             try {
                 transport.connect(user, password);
-                transport.sendMessage(replymsg, replymsg.getAllRecipients());
+                transport.sendMessage(replyMsg, replyMsg.getAllRecipients());
             } finally {
                 transport.close();
             }
@@ -258,7 +254,7 @@ public class EmailManager {
     }
 
     /**
-     * Copy specified email from one folder to another
+     * Copy an email from one folder to another
      * 
      * @param fromFolder   the folder the email is currently located in
      * @param toFolder   the folder the email is going to be moved to
@@ -270,13 +266,12 @@ public class EmailManager {
             Message[] messages = {msg};
             getFolder(fromFolder).copyMessages(messages, getFolder(toFolder));
         } catch (MessagingException e) {
-            close();
             throw new MessagingException("Failed to copy email from " + fromFolder + " to " + toFolder, e);
         }
     }
 
     /**
-     * Delete email from a folder
+     * Delete an email from a folder
      * 
      * @param folder   the folder the email should be deleted from
      * @param msg   the email to be deleted
@@ -295,7 +290,7 @@ public class EmailManager {
     }
 
     /**
-     * Close inbox folder and store
+     * Close the inbox folder and store
      */
     public void close() {
         try {

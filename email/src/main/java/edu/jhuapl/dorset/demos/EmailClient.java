@@ -40,7 +40,7 @@ public class EmailClient {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailClient.class);
     private EmailManager manager;
-    private static Application app;
+    private Application app;
 
     /**
      * EmailClient
@@ -61,16 +61,20 @@ public class EmailClient {
      * @throws MessagingException   if cannot connect to server
      * @throws IOException   if errors occur while processing email
      */
-    public static void main(String[] args) throws MessagingException, IOException {
-        Config config = ConfigFactory.load();
-        EmailClient client;
-        try {
-            client = new EmailClient(new EmailManager(config));
-        } catch (MessagingException e) {
-            throw new MessagingException("Could not connect to server. Check your connection and configurations. Quitting now.", e);
-        }
-        client.run();
-        client.close();
+    public static void main(String[] args) {
+            Config config = ConfigFactory.load();
+            EmailClient client = null;
+            try {
+                client = new EmailClient(new EmailManager(config));
+            } catch (MessagingException e) {
+                System.err.println("Could not connect to server. Check your network connection and account/server configurations. Quitting now.");
+            }
+            try {
+                client.run();
+            } catch (MessagingException e) {
+                System.err.println("An error occured while processing emails. Check your network connection. Quitting now.");
+            }
+            client.close();   
     }
 
     /**
@@ -79,7 +83,7 @@ public class EmailClient {
      * @throws MessagingException   if errors occur while processing email
      * @throws IOException   if errors occur while processing email
      */
-    private void run() throws MessagingException, IOException {
+    private void run() throws MessagingException {
         Scanner scan = new Scanner(System.in);
 
         try {
@@ -90,13 +94,10 @@ public class EmailClient {
                 while (manager.getCount(FolderType.INBOX) > 0) {
                     Message msg = manager.getMessage(FolderType.INBOX);
                     String text = manager.readEmail(msg);
-                    if (text == null) { 
-                        manager.sendMessage("An error ocured while processing your response", msg);
-                        manager.copyEmail(FolderType.INBOX, FolderType.ERROR, msg);
-                    } else {
-                        manager.sendMessage(processMessage(text), msg);
-                        manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
-                    }
+                    //manager.sendMessage("An error ocured while processing your response", msg);
+                    //manager.copyEmail(FolderType.INBOX, FolderType.ERROR, msg);
+                    manager.sendMessage(processMessage(text), msg);
+                    manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
                     manager.deleteEmail(FolderType.INBOX, msg);
                     //TODO need to do something with true/false return value
                 }
@@ -117,9 +118,8 @@ public class EmailClient {
 
     /**
      * Close EmailManager objects
-     * @throws MessagingException   if cannot close properly
      */
-    private void close() throws MessagingException {
+    private void close() {
         manager.close();  
     }
 
@@ -129,7 +129,7 @@ public class EmailClient {
      * @param text   the text sent to a Dorset agent
      * @return the response from a Dorset agent
      */
-    private static String processMessage(String text) {
+    private String processMessage(String text) {
         Request request = new Request(text);
         Response response = app.process(request);
         return response.getText();
