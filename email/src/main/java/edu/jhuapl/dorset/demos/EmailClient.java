@@ -101,7 +101,6 @@ public class EmailClient {
             }
         } catch (MessagingException  e) {
             throw new MessagingException("Fatal error has occured. Quitting now.", e);
-        } finally {
         }
     }
 
