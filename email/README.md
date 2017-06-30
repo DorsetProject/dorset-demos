@@ -12,12 +12,12 @@ Configuration file must be named application.conf
 ## Run
 If you're using Windows, run the Email Client with:  
 ```
-./run.sh
+./run.bat
 ```
 
 If you're using Mac/Linux, run the Email Client with:  
 ```
-./run.bat
+./run.sh
 ```
 
 ## Available Agents:
