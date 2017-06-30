@@ -249,7 +249,7 @@ public class EmailManager {
                 transport.close();
             }
         } catch (MessagingException e) {
-            throw new MessagingException("Failed to rely to email", e);
+            throw new MessagingException("Failed to reply to email", e);
         }
     }
 

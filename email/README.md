@@ -15,4 +15,4 @@ java -jar target/[email client jar name]
 ```
 
 ## Available Agents:
- - Date/Time agent: ask what the time is or what is today's date
+ - Date/Time agent: ask what the time is or what is today's date  
