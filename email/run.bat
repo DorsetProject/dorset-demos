@@ -38,7 +38,7 @@ set DORSET_JAVA_EXE="%JAVA_HOME%\bin\java.exe"
 
 for %%i in (target\email-client-*.jar) do set DORSET_JAR="%%i"
 
-%DORSET_JAVA_EXE% -jar %DORSET_JAR% %DORSET_CMD_LINE_ARGS%
+%DORSET_JAVA_EXE% -cp .;%DORSET_JAR% edu.jhuapl.dorset.demos.EmailClient
 if ERRORLEVEL 1 goto error
 goto end
 

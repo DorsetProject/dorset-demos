@@ -7,11 +7,17 @@ mvn clean package
 ## Configurations
 See sample.conf for an example of configurations.   
 Sample ports and hosts are for a gmail server.  
+Configuration file must be named application.conf
 
 ## Run
-The Email Client is run with:  
+If you're using Windows, run the Email Client with:  
 ```
-java -jar target/[email client jar name]  
+./run.sh
+```
+
+If you're using Mac/Linux, run the Email Client with:  
+```
+./run.bat
 ```
 
 ## Available Agents:
