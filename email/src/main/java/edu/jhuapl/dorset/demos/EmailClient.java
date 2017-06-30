@@ -62,19 +62,19 @@ public class EmailClient {
      * @throws IOException   if errors occur while processing email
      */
     public static void main(String[] args) {
-            Config config = ConfigFactory.load();
-            EmailClient client = null;
-            try {
-                client = new EmailClient(new EmailManager(config));
-            } catch (MessagingException e) {
-                System.err.println("Could not connect to server. Check your network connection and account/server configurations. Quitting now.");
-            }
-            try {
-                client.run();
-            } catch (MessagingException e) {
-                System.err.println("An error occured while processing emails. Check your network connection. Quitting now.");
-            }
-            client.close();   
+        Config config = ConfigFactory.load();
+        EmailClient client = null;
+        try {
+            client = new EmailClient(new EmailManager(config));
+        } catch (MessagingException e) {
+            System.err.println("Could not connect to server. Check your network connection and account/server configurations. Quitting now.");
+        }
+        try {
+            client.run();
+        } catch (MessagingException e) {
+            System.err.println("An error occured while processing emails. Check your network connection. Quitting now.");
+        }
+        client.close();
     }
 
     /**

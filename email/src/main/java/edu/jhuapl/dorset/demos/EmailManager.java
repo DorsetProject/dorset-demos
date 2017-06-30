@@ -62,7 +62,7 @@ public class EmailManager {
     private static final String ENCAPSULATED = "message/rfc822";
     private static final String TEXT_PLAIN = "text/plain";
     private static final String MULTIPART = "multipart/*";
-    
+
     /**
     * EmailManager Constructor.
     * 
@@ -132,14 +132,14 @@ public class EmailManager {
      */
     private Folder getFolder(FolderType folder) {
         switch (folder) {
-            case INBOX:
-                return inboxFolder;
             case ERROR:
                 return errorFolder;
             case COMPLETE:
                 return completeFolder;
+            case INBOX:
+            default:
+                return inboxFolder;
         }
-        return null;
     }
 
     /**
@@ -238,6 +238,10 @@ public class EmailManager {
             logger.info("response reads: " + response);
             Message replyMsg = (MimeMessage) msg.reply(false);
             replyMsg.setFrom(new InternetAddress(from));
+            if (response == null) {
+                response = "Sorry, we could not understand your request. \nTry asking about the date or time:"
+                                + "\nEx) \"What is the time?\"";
+            }
             replyMsg.setText(response);
             replyMsg.setReplyTo(msg.getReplyTo());
 
