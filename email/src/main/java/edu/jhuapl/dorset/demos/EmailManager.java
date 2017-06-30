@@ -110,6 +110,7 @@ public class EmailManager {
     }
     /**
      * Get folders and create them if they do not already exist
+     *
      * @throws MessagingException   if folders cannot be initialized
      */
     private void initFolders() throws MessagingException {
@@ -168,7 +169,7 @@ public class EmailManager {
         try {
             return getFolder(folder).getMessage(1);
         } catch (MessagingException e) {
-            throw new MessagingException("Failed to retrieve email from " + folder + "folder", e);
+            throw new MessagingException("Failed to retrieve email from " + folder + " folder", e);
         }  
     }
     
@@ -238,10 +239,6 @@ public class EmailManager {
             logger.info("response reads: " + response);
             Message replyMsg = (MimeMessage) msg.reply(false);
             replyMsg.setFrom(new InternetAddress(from));
-            if (response == null) {
-                response = "Sorry, we could not understand your request. \nTry asking about the date or time:"
-                                + "\nEx) \"What is the time?\"";
-            }
             replyMsg.setText(response);
             replyMsg.setReplyTo(msg.getReplyTo());
 
@@ -280,16 +277,14 @@ public class EmailManager {
      * @param folder   the folder the email should be deleted from
      * @param msg   the email to be deleted
      */
-    public boolean deleteEmail(FolderType folder, Message msg) {
+    public void deleteEmail(FolderType folder, Message msg) {
         try {
             msg.setFlag(Flags.Flag.DELETED, true);
             getFolder(folder).expunge();
             getFolder(folder).close(false);
             getFolder(folder).open(Folder.READ_WRITE);
-            return true;
         } catch (MessagingException e) {
             logger.error("Failed to delete email from " + folder + " folder", e);
-            return false;
         }
     }
 

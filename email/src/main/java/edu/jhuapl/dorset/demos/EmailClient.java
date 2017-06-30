@@ -16,7 +16,6 @@
  */
 package edu.jhuapl.dorset.demos;
 
-import java.io.IOException;
 import java.util.Scanner;
 
 import javax.mail.Message;
@@ -58,8 +57,6 @@ public class EmailClient {
      * Main method in Email Client
      * 
      * @param args   command line arguments
-     * @throws MessagingException   if cannot connect to server
-     * @throws IOException   if errors occur while processing email
      */
     public static void main(String[] args) {
         Config config = ConfigFactory.load();
@@ -68,6 +65,7 @@ public class EmailClient {
             client = new EmailClient(new EmailManager(config));
         } catch (MessagingException e) {
             System.err.println("Could not connect to server. Check your network connection and account/server configurations. Quitting now.");
+            System.exit(-1);
         }
         try {
             client.run();
@@ -81,7 +79,6 @@ public class EmailClient {
      * Process and respond to emails
      *
      * @throws MessagingException   if errors occur while processing email
-     * @throws IOException   if errors occur while processing email
      */
     private void run() throws MessagingException {
         Scanner scan = new Scanner(System.in);
@@ -94,12 +91,9 @@ public class EmailClient {
                 while (manager.getCount(FolderType.INBOX) > 0) {
                     Message msg = manager.getMessage(FolderType.INBOX);
                     String text = manager.readEmail(msg);
-                    //manager.sendMessage("An error ocured while processing your response", msg);
-                    //manager.copyEmail(FolderType.INBOX, FolderType.ERROR, msg);
                     manager.sendMessage(processMessage(text), msg);
                     manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
                     manager.deleteEmail(FolderType.INBOX, msg);
-                    //TODO need to do something with true/false return value
                 }
                 try {
                     Thread.sleep(2000);
@@ -109,7 +103,6 @@ public class EmailClient {
                 System.out.println("continue/quit?: ");
             }
         } catch (MessagingException  e) {
-            close();
             throw new MessagingException("Fatal error has occured. Quitting now.", e);
         } finally {
             scan.close();
@@ -132,6 +125,11 @@ public class EmailClient {
     private String processMessage(String text) {
         Request request = new Request(text);
         Response response = app.process(request);
-        return response.getText();
+        String reply = response.getText();
+        if (reply == null) {
+            reply = "Sorry, we could not understand your request. \nTry asking about the date or time:"
+                            + "\nEx) \"What is the time?\"";
+        }
+        return reply;
     }
 }
