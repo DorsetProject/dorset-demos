@@ -37,6 +37,9 @@ import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValue;
 
+import edu.jhuapl.dorset.nlp.Tokenizer;
+import edu.jhuapl.dorset.nlp.WhiteSpaceTokenizer;
+
 public class EmailManager {
     
     private static final Logger logger = LoggerFactory.getLogger(EmailManager.class);
@@ -192,21 +195,30 @@ public class EmailManager {
      * Retrieve and return text from an email
      * 
      * @param msg   the email to be read
-     * @return the text the email
+     * @return the text of an email
      * @throws MessagingException   if email cannot be accessed
      */
     public String readEmail(Message msg) throws MessagingException {
-        return getText(msg);
+        Tokenizer tokenizer = new WhiteSpaceTokenizer();
+        String subject = msg.getSubject().toLowerCase();
+        String[] subjectTokenized = tokenizer.tokenize(subject);
+
+        if (subject.contains("RE: ") || subjectTokenized.length <= 1) {
+            return getBodyText(msg);
+        } else {
+            return subject;
+        }
+
     }
 
     /**
-     * Get the text of an email
+     * Get the text of an email body
      * 
      * @param part   the email body to be retrieved
      * @return text  the text of the email
      * @throws MessagingException   if email body cannot be retrieved
      */
-    private String getText(Part part) throws MessagingException {
+    private String getBodyText(Part part) throws MessagingException {
         try {
             String text = "";
             if (part.isMimeType(TEXT_PLAIN)) {
@@ -215,10 +227,10 @@ public class EmailManager {
                 Multipart mp = (Multipart) part.getContent();
                 int count = mp.getCount();
                 for (int n = 0; n < count; n++) {
-                    text += (getText(mp.getBodyPart(n)));
+                    text += (getBodyText(mp.getBodyPart(n)));
                 }
             } else if (part.isMimeType(ENCAPSULATED)) {
-                text += getText((Part) part.getContent());
+                text += getBodyText((Part) part.getContent());
             }
             logger.info("email reads: " + text);
             return text;
@@ -241,6 +253,12 @@ public class EmailManager {
             replyMsg.setFrom(new InternetAddress(from));
             replyMsg.setText(response);
             replyMsg.setReplyTo(msg.getReplyTo());
+
+            if (!msg.getSubject().contains("RE: ")) {
+                replyMsg.setSubject("RE: " + msg.getSubject());
+            } else {
+                replyMsg.setSubject(msg.getSubject());
+            }
 
             Transport transport = session.getTransport(SMTP);
             try {
