@@ -22,3 +22,8 @@ If you're using Mac/Linux, run the Email Client with:
 
 ## Available Agents:
  - Date/Time agent: ask what the time is or what is today's date  
+ 
+## How To Use:
+- Send an email to DorsetTest123@gmail.com
+- The email should ask a question in the subject, unless it is responding to an email from DorsetTest123@gmail.com, then the subject should be left as is
+- See Available Agents section for example questions
