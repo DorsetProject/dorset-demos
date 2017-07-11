@@ -162,15 +162,39 @@ public class EmailManager {
     }
     
     /**
-     * Get an email from a folder
+     * Get a seen email from a folder
      * 
      * @param folder   the folder to retrieve an email from
      * @return the email
      * @throws MessagingException   if email cannot be retrieved
      */
-    public Message getMessage(FolderType folder) throws MessagingException {
+    public synchronized Message getSeenMessage(FolderType folder) throws MessagingException {
         try {
             return getFolder(folder).getMessage(1);
+        } catch (MessagingException e) {
+            throw new MessagingException("Failed to retrieve email from " + folder + " folder", e);
+        }  
+    }
+    
+    /**
+     * Get an unseen email from a folder
+     * 
+     * @param folder   the folder to retrieve an email from
+     * @return the email
+     * @throws MessagingException   if email cannot be retrieved
+     */
+    public synchronized Message getUnseenMessage(FolderType folder) throws MessagingException {
+        try {
+            int count = 1;
+            Message msg = getFolder(folder).getMessage(count);
+            while (msg.isSet(Flags.Flag.SEEN)) {
+                count++;
+                if (count > getFolder(folder).getMessageCount()) {
+                    throw new MessagingException("Failed to retrieve email from " + folder + " folder");
+                }
+                msg = getFolder(folder).getMessage(count);
+            }
+            return msg;
         } catch (MessagingException e) {
             throw new MessagingException("Failed to retrieve email from " + folder + " folder", e);
         }  
