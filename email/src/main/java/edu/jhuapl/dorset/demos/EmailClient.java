@@ -18,31 +18,47 @@ package edu.jhuapl.dorset.demos;
 
 import javax.mail.MessagingException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 public class EmailClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(EmailClient.class);
+
+    private static final String CONSUMER_THREAD_COUNT_KEY = "consumerThreads";
+
     /**
      * Main method in Email Client
      * 
      * @param args   command line arguments
-     * @throws MessagingException 
      */
     public static void main(String[] args) {
-        //config will decide how many consumer threads
-        //get config value for number of consumers-- for loop: create x consumers
+        System.out.println("Running the Email Client. Press Control-C to quit. ");
+
         Config config = ConfigFactory.load();
+        String consumerThreads = config.getString(CONSUMER_THREAD_COUNT_KEY);
+        int consumerThreadCount;
+        try {
+            consumerThreadCount = Integer.parseInt(consumerThreads);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid configuration set for consumerThreads. Must be an integer. " + e);
+            consumerThreadCount = 1;
+        }
 
         try {
-            //EmailClient client = new EmailClient(new EmailManager(config));
             EmailManager manager = new EmailManager(config);
-            EmailList emailList = new EmailList();
-            //create producer and consumer thread objects
+            EmailQueue emailList = new EmailQueue();
+
             EmailProducer producer = new EmailProducer(manager, emailList);
             new Thread(producer).start();
-            EmailConsumer consumer = new EmailConsumer(manager, emailList);
-            new Thread(consumer).start();
+
+            for (int n = 0; n < consumerThreadCount; n++) {
+                EmailConsumer consumer = new EmailConsumer(manager, emailList);
+                new Thread(consumer).start();
+            }
         } catch (MessagingException e) {
             System.err.println("Could not connect to server. Check your network connection and account/server configurations. Quitting now.");
             System.exit(-1);
