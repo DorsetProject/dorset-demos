@@ -53,30 +53,40 @@ public class EmailConsumer implements Runnable {
     }
 
     /**
-     * Gets emails from the queue and responds to them
+     * Run consumer thread
      */
     public void run() {
+        while (true) {
+            handleSeenMesage();
+        }
+    }
+
+    /**
+     * Handle seen messages
+     */
+    private void handleSeenMesage() {
         try {
-            while (true) {
-                if (!emailQueue.isEmpty() && manager.getCount(FolderType.INBOX) > 0) {
-                    emailQueue.removeMessage();
-                    Message msg = manager.getSeenMessage(FolderType.INBOX);
-                    String text = manager.readEmail(msg);
-                    manager.sendMessage(processMessage(text), msg);
-                    manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
-                    manager.deleteEmail(FolderType.INBOX, msg);
-                }
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    logger.info("Consumer thread was interupted");
-                }
+            if (!emailQueue.isEmpty() && manager.getCount(FolderType.INBOX) > 0) {
+                getAndReplyToEmail();
             }
         } catch (MessagingException  e) {
-            logger.error("Could not process email. ", e);
-            System.err.println("Could not connect to server. Check your network connection. Quitting now.");
-            System.exit(-1); 
+            logAndOutputError(e);
         }
+        sleepThread();
+    }
+
+    /**
+     * Get and reply to an email
+     *
+     * @throws MessagingException   ifemail could not be processed
+     */
+    private void getAndReplyToEmail() throws MessagingException {
+        emailQueue.removeMessage();
+        Message msg = manager.getSeenMessage(FolderType.INBOX);
+        String text = manager.readEmail(msg);
+        manager.sendMessage(processMessage(text), msg);
+        manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
+        manager.deleteEmail(FolderType.INBOX, msg);
     }
 
     /**
@@ -95,5 +105,27 @@ public class EmailConsumer implements Runnable {
                             + "\nEx) \"What is the time?\"";
         }
         return reply;
+    }
+
+    /**
+     * Log and output an error message
+     *
+     * @param e   the exception thrown
+     */
+    private void logAndOutputError(MessagingException exception) {
+        logger.error("Could not process email. ", exception);
+        System.err.println("Could not connect to server. Check your network connection. Quitting now.");
+        System.exit(-1);
+    }
+
+    /**
+     * Sleep thread
+     */
+    private void sleepThread() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            logger.info("Consumer thread was interupted");
+        }
     }
 }

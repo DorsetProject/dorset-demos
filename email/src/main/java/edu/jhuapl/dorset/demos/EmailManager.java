@@ -50,7 +50,7 @@ public class EmailManager {
     private static final String HOST_KEY = "host";
     private static final String FROM_KEY = "from";
 
-    private String user;
+    private String username;
     private String password;
     private String mailStoreType;
     private String host;
@@ -76,7 +76,7 @@ public class EmailManager {
     */
     public EmailManager(Config config) throws MessagingException {
         
-        user = config.getString(USERNAME_KEY);
+        username = config.getString(USERNAME_KEY);
         password = config.getString(PASSWORD_KEY);
         mailStoreType = config.getString(MAIL_STORE_TYPE_KEY);
         host = config.getString(HOST_KEY); 
@@ -85,7 +85,7 @@ public class EmailManager {
         session = Session.getDefaultInstance(prop);
         store = session.getStore(mailStoreType);
         try {
-            store.connect(host, user, password);
+            store.connect(host, username, password);
         } catch (MessagingException e) {
             throw new MessagingException("Failed to set up imap connection. Check your network connection and account/server configurations.", e);
         }
@@ -183,7 +183,7 @@ public class EmailManager {
      * @param folder   the folder to retrieve an email from
      * @return the email
      * @throws MessagingException   if email cannot be retrieved
-     * @throws IndexOutOfBoundsException   
+     * @throws IndexOutOfBoundsException   if there are no unseen emails
      */
     public synchronized Message getUnseenMessage(FolderType folder) throws IndexOutOfBoundsException, MessagingException {
         try {    
@@ -210,7 +210,6 @@ public class EmailManager {
      * @param msg  the email to be marked seen
      * @throws MessagingException   if email cannot be properly marked
      */
-    //not currently being used, but may be needed for threading
     public synchronized void markSeen(Message msg) throws MessagingException {
         try {
             msg.setFlag(Flags.Flag.SEEN, true);
@@ -289,7 +288,7 @@ public class EmailManager {
 
             Transport transport = session.getTransport(SMTP);
             try {
-                transport.connect(user, password);
+                transport.connect(username, password);
                 transport.sendMessage(replyMsg, replyMsg.getAllRecipients());
             } finally {
                 transport.close();

@@ -16,19 +16,20 @@
  */
 package edu.jhuapl.dorset.demos;
 
-import java.util.ArrayDeque;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import javax.mail.Message;
 
 public class EmailQueue {
 
-    private ArrayDeque<Message> messages;
+    private BlockingQueue<Message> messages;
 
     /**
      * Create an EmailQueue
      */
     public EmailQueue() {
-        messages = new ArrayDeque<Message>();
+        messages = new ArrayBlockingQueue<Message>(20);
     }
 
     /**
@@ -37,14 +38,14 @@ public class EmailQueue {
      * @param msg   the message to be put into the queue
      */
     public synchronized void putMessage(Message msg) {
-        messages.addLast(msg);
+        messages.add(msg);
     }
 
     /**
      * Take a message off the queue
      */
-    public synchronized void removeMessage() {
-        messages.removeFirst();
+     public synchronized void removeMessage() {
+        messages.remove();
     }
 
     /**

@@ -30,6 +30,25 @@ public class EmailClient {
 
     private static final String CONSUMER_THREAD_COUNT_KEY = "consumerThreads";
 
+    private EmailManager manager;
+    private EmailQueue emailQueue;
+    private String consumerThreads;
+
+    /**
+     * Create an EmailClient
+     */
+    public EmailClient() {
+        Config config = ConfigFactory.load();
+        consumerThreads = config.getString(CONSUMER_THREAD_COUNT_KEY);
+        emailQueue = new EmailQueue();
+        try {
+            manager = new EmailManager(config);
+        } catch (MessagingException e) {
+            System.err.println("Could not connect to server. Check your network connection and account/server configurations. Quitting now.");
+            System.exit(-1);
+        }
+    }
+
     /**
      * Main method in Email Client
      * 
@@ -37,9 +56,16 @@ public class EmailClient {
      */
     public static void main(String[] args) {
         System.out.println("Running the Email Client. Press Control-C to quit. ");
+        EmailClient client = new EmailClient();
+        client.createAndStartThreads(client.getConsumerThreadCount());
+    }
 
-        Config config = ConfigFactory.load();
-        String consumerThreads = config.getString(CONSUMER_THREAD_COUNT_KEY);
+    /**
+     * Parses String consumerThreads into an integer
+     *
+     * @return consumerThreadCount   the number of consumer threads
+     */
+    private int getConsumerThreadCount() {
         int consumerThreadCount;
         try {
             consumerThreadCount = Integer.parseInt(consumerThreads);
@@ -47,21 +73,21 @@ public class EmailClient {
             logger.error("Invalid configuration set for consumerThreads. Must be an integer. " + e);
             consumerThreadCount = 1;
         }
+        return consumerThreadCount;
+    }
 
-        try {
-            EmailManager manager = new EmailManager(config);
-            EmailQueue emailList = new EmailQueue();
+    /**
+     * Create and start threads
+     *
+     * @param consumerThreadCount   the number if conumer threads
+     */
+    private void createAndStartThreads(int consumerThreadCount) {
+        EmailProducer producer = new EmailProducer(manager, emailQueue);
+        new Thread(producer).start();
 
-            EmailProducer producer = new EmailProducer(manager, emailList);
-            new Thread(producer).start();
-
-            for (int n = 0; n < consumerThreadCount; n++) {
-                EmailConsumer consumer = new EmailConsumer(manager, emailList);
-                new Thread(consumer).start();
-            }
-        } catch (MessagingException e) {
-            System.err.println("Could not connect to server. Check your network connection and account/server configurations. Quitting now.");
-            System.exit(-1);
+        for (int n = 0; n < consumerThreadCount; n++) {
+            EmailConsumer consumer = new EmailConsumer(manager, emailQueue);
+            new Thread(consumer).start();
         }
     }
 }

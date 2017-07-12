@@ -27,7 +27,7 @@ public class EmailProducer implements Runnable {
 
     private EmailManager manager;
     private EmailQueue emailQueue;
-    
+
     /**
      * Create an EmailProducer
      *
@@ -38,39 +38,49 @@ public class EmailProducer implements Runnable {
         this.manager = manager;
         this.emailQueue = emailQueue;
     }
-    
+
     /**
-     * Gets messages from inbox and adds them to a queue
+     * Run producer thread
      */
     public void run() {
+        printNumberOfMessages();
+        while (true) {
+            handleUnseenMessage();
+        }
+    }
+
+    /**
+     * print number of messages in inbox
+     */
+    private void printNumberOfMessages() {
         try {
             System.out.println("\nMessages in Inbox: " + manager.getCount(FolderType.INBOX));
         } catch (MessagingException e) {
-            logger.error("Could not access inbox " + e);
-            System.err.println(e.getMessage() + " Quitting now.");
-            System.exit(-1);
-        }
-        while (true) {
-            try {
-                if (manager.getCount(FolderType.INBOX) > 0 && hasUnseen()) {
-                    logger.info("Inbox contains " + manager.getCount(FolderType.INBOX) + " messages");
-                    emailQueue.putMessage(manager.getUnseenMessage(FolderType.INBOX));
-                    manager.markSeen(manager.getUnseenMessage(FolderType.INBOX));
-                }
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    logger.info("Producer thread was interupted");
-                }
-            } catch (MessagingException e) {
-                logger.error("Could not access inbox " + e);
-                System.err.println(e.getMessage() + " Quitting now.");
-                System.exit(-1);
-            }
+            logAndOutputError(e);
         }
     }
-    
-    public boolean hasUnseen() {
+
+    /**
+     * Handle unseen messages
+     */
+    private void handleUnseenMessage() {
+        try {
+            if (manager.getCount(FolderType.INBOX) > 0 && hasUnseenMessages()) {
+                emailQueue.putMessage(manager.getUnseenMessage(FolderType.INBOX));
+                manager.markSeen(manager.getUnseenMessage(FolderType.INBOX));
+            }
+            sleepThread();
+        } catch (MessagingException e) {
+            logAndOutputError(e);
+        }
+    }
+
+    /**
+     * Returns whether the inbox has unseen messages
+     *
+     * @return whether the inbox has unseen messages
+     */
+    public boolean hasUnseenMessages() {
         try {
             manager.getUnseenMessage(FolderType.INBOX);
         } catch (IndexOutOfBoundsException e) {
@@ -79,5 +89,27 @@ public class EmailProducer implements Runnable {
             return true;
         }
         return true;
+    }
+
+    /**
+     * Log and output an error message
+     *
+     * @param e   the exception thrown
+     */
+    private void logAndOutputError(MessagingException exception) {
+        logger.error("Could not access inbox " + exception);
+        System.err.println(exception.getMessage() + " Quitting now.");
+        System.exit(-1);
+    }
+
+    /**
+     * Sleep thread
+     */
+    private void sleepThread() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            logger.info("Producer thread was interupted");
+        }
     }
 }
