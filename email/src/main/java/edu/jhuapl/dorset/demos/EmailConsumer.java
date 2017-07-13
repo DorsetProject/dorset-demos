@@ -66,7 +66,7 @@ public class EmailConsumer implements Runnable {
      */
     private void handleSeenMesage() {
         try {
-            if (!emailQueue.isEmpty() && manager.getCount(FolderType.INBOX) > 0) {
+            if (manager.getCount(FolderType.INBOX) > 0) {
                 getAndReplyToEmail();
             }
         } catch (MessagingException  e) {
@@ -78,15 +78,16 @@ public class EmailConsumer implements Runnable {
     /**
      * Get and reply to an email
      *
-     * @throws MessagingException   ifemail could not be processed
+     * @throws MessagingException   if email could not be processed
      */
     private void getAndReplyToEmail() throws MessagingException {
-        emailQueue.removeMessage();
-        Message msg = manager.getSeenMessage(FolderType.INBOX);
-        String text = manager.readEmail(msg);
-        manager.sendMessage(processMessage(text), msg);
-        manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
-        manager.deleteEmail(FolderType.INBOX, msg);
+        if (emailQueue.removeMessageIfAny()) {
+            Message msg = manager.getSeenMessage(FolderType.INBOX);
+            String text = manager.readEmail(msg);
+            manager.sendMessage(processMessage(text), msg);
+            manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
+            manager.deleteEmail(FolderType.INBOX, msg);
+        }
     }
 
     /**
@@ -123,7 +124,7 @@ public class EmailConsumer implements Runnable {
      */
     private void sleepThread() {
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             logger.info("Consumer thread was interupted");
         }

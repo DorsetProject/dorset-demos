@@ -79,7 +79,7 @@ public class EmailClient {
     /**
      * Create and start threads
      *
-     * @param consumerThreadCount   the number if conumer threads
+     * @param consumerThreadCount   the number if consumer threads
      */
     private void createAndStartThreads(int consumerThreadCount) {
         EmailProducer producer = new EmailProducer(manager, emailQueue);

@@ -50,7 +50,7 @@ public class EmailProducer implements Runnable {
     }
 
     /**
-     * print number of messages in inbox
+     * Print number of messages in inbox
      */
     private void printNumberOfMessages() {
         try {
@@ -107,7 +107,7 @@ public class EmailProducer implements Runnable {
      */
     private void sleepThread() {
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             logger.info("Producer thread was interupted");
         }

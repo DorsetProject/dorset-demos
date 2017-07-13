@@ -43,9 +43,16 @@ public class EmailQueue {
 
     /**
      * Take a message off the queue
+     * 
+     * @return whether there was a message to remove
      */
-     public synchronized void removeMessage() {
-        messages.remove();
+    public synchronized boolean removeMessageIfAny() {
+        if (!messages.isEmpty()) {
+            messages.remove();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
