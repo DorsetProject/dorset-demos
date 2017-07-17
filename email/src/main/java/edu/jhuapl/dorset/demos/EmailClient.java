@@ -16,6 +16,7 @@
  */
 package edu.jhuapl.dorset.demos;
 
+import javax.mail.Message;
 import javax.mail.MessagingException;
 
 import org.slf4j.Logger;
@@ -23,6 +24,14 @@ import org.slf4j.LoggerFactory;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+
+import edu.jhuapl.dorset.Application;
+import edu.jhuapl.dorset.Request;
+import edu.jhuapl.dorset.Response;
+import edu.jhuapl.dorset.agents.Agent;
+import edu.jhuapl.dorset.agents.DateTimeAgent;
+import edu.jhuapl.dorset.routing.Router;
+import edu.jhuapl.dorset.routing.SingleAgentRouter;
 
 public class EmailClient {
 
@@ -33,6 +42,8 @@ public class EmailClient {
     private EmailManager manager;
     private EmailQueue emailQueue;
     private String consumerThreads;
+    private Application app;
+    private static EmailClient client;
 
     /**
      * Create an EmailClient
@@ -56,8 +67,15 @@ public class EmailClient {
      */
     public static void main(String[] args) {
         System.out.println("Running the Email Client. Press Control-C to quit. ");
-        EmailClient client = new EmailClient();
-        client.createAndStartThreads(client.getConsumerThreadCount());
+        //EmailClient client = new EmailClient();
+        client = new EmailClient();
+        EmailProducer producer = new EmailProducer(client);
+        new Thread(producer).start();
+
+        for (int n = 0; n < client.getConsumerThreadCount(); n++) {
+            EmailConsumer consumer = new EmailConsumer(client);
+            new Thread(consumer).start();
+        }
     }
 
     /**
@@ -77,17 +95,116 @@ public class EmailClient {
     }
 
     /**
-     * Create and start threads
-     *
-     * @param consumerThreadCount   the number if consumer threads
+     * Print number of messages in inbox
      */
-    private void createAndStartThreads(int consumerThreadCount) {
-        EmailProducer producer = new EmailProducer(manager, emailQueue);
-        new Thread(producer).start();
-
-        for (int n = 0; n < consumerThreadCount; n++) {
-            EmailConsumer consumer = new EmailConsumer(manager, emailQueue);
-            new Thread(consumer).start();
+    public void printNumberOfMessages() {
+        try {
+            System.out.println("\nMessages in Inbox: " + manager.getCount(FolderType.INBOX));
+        } catch (MessagingException e) {
+            logAndOutputError(e);
         }
+    }
+
+    /**
+     * Handle unseen messages
+     */
+    public synchronized void handleUnseenMessage() {
+        try {
+            if (manager.getCount(FolderType.INBOX) > 0 && hasUnseenMessages()) {
+                emailQueue.putMessage(manager.getUnseenMessage(FolderType.INBOX));
+                manager.markSeen(manager.getUnseenMessage(FolderType.INBOX));
+            }
+            waitThread();
+        } catch (MessagingException e) {
+            logAndOutputError(e);
+        }
+    }
+
+    /**
+     * Returns whether the inbox has unseen messages
+     *
+     * @return whether the inbox has unseen messages
+     */
+    private boolean hasUnseenMessages() {
+        try {
+            manager.getUnseenMessage(FolderType.INBOX);
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        } catch (MessagingException e) {
+            return true;
+        }
+        return true;
+    }
+
+    /**
+     * Log and output an error message
+     *
+     * @param e   the exception thrown
+     */
+    private void logAndOutputError(MessagingException exception) {
+        logger.error("Could not process email. ", exception);
+        System.err.println(exception.getMessage() + " Check your network connection. Quitting now.");
+        System.exit(-1);
+    }
+
+    /**
+     * Wait thread
+     */
+    public void waitThread() {
+        try {
+            client.wait(500);
+        } catch (InterruptedException e) {
+            logger.info("Thread was interupted");
+        }
+    }
+
+    /**
+     * Handle seen messages
+     */
+    public synchronized void handleSeenMesage() {
+        try {
+            if (manager.getCount(FolderType.INBOX) > 0) {
+                getAndReplyToEmail();
+            }
+            waitThread();
+        } catch (MessagingException  e) {
+            logAndOutputError(e);
+        }
+    }
+
+    /**
+     * Get and reply to an email
+     *
+     * @throws MessagingException   if email could not be processed
+     */
+    private void getAndReplyToEmail() throws MessagingException {
+        if (emailQueue.removeMessageIfAny()) {
+            Message msg = manager.getSeenMessage(FolderType.INBOX);
+            String text = manager.readEmail(msg);
+            manager.sendMessage(processMessage(text), msg);
+            manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
+            manager.deleteEmail(FolderType.INBOX, msg);
+        }
+    }
+
+    /**
+     * Access a Dorset agent and process the email text
+     *
+     * @param text   the text sent to a Dorset agent
+     * @return the response from a Dorset agent
+     */
+    private String processMessage(String text) {
+        Agent agent = new DateTimeAgent();
+        Router router = new SingleAgentRouter(agent);
+        app = new Application(router);
+        Request request = new Request(text);
+        Response response = app.process(request);
+        String reply = response.getText();
+        if (reply == null) {
+            logger.info("No response from Dorset Agent to: " + text);
+            reply = "Sorry, we could not understand your request. \nTry asking about the date or time:"
+                            + "\nEx) \"What is the time?\"";
+        }
+        return reply;
     }
 }
