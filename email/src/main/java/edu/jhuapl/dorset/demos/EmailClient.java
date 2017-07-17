@@ -43,7 +43,6 @@ public class EmailClient {
     private EmailQueue emailQueue;
     private String consumerThreads;
     private Application app;
-    private static EmailClient client;
 
     /**
      * Create an EmailClient
@@ -55,8 +54,15 @@ public class EmailClient {
         try {
             manager = new EmailManager(config);
         } catch (MessagingException e) {
-            System.err.println("Could not connect to server. Check your network connection and account/server configurations. Quitting now.");
+            System.err.println("Check your network connection and account/server configurations. Quitting now.");
             System.exit(-1);
+        }
+        
+        EmailProducer producer = new EmailProducer(this);
+        new Thread(producer).start();
+        for (int n = 0; n < getConsumerThreadCount(); n++) {
+            EmailConsumer consumer = new EmailConsumer(this);
+            new Thread(consumer).start();
         }
     }
 
@@ -67,21 +73,13 @@ public class EmailClient {
      */
     public static void main(String[] args) {
         System.out.println("Running the Email Client. Press Control-C to quit. ");
-        //EmailClient client = new EmailClient();
-        client = new EmailClient();
-        EmailProducer producer = new EmailProducer(client);
-        new Thread(producer).start();
-
-        for (int n = 0; n < client.getConsumerThreadCount(); n++) {
-            EmailConsumer consumer = new EmailConsumer(client);
-            new Thread(consumer).start();
-        }
+        new EmailClient();
     }
 
     /**
-     * Parses String consumerThreads into an integer
+     * Parse String consumerThreads into an integer
      *
-     * @return consumerThreadCount   the number of consumer threads
+     * @return consumerThreadCount   the number of consumer threads to be created
      */
     private int getConsumerThreadCount() {
         int consumerThreadCount;
@@ -152,7 +150,7 @@ public class EmailClient {
      */
     public void waitThread() {
         try {
-            client.wait(500);
+            wait(500);
         } catch (InterruptedException e) {
             logger.info("Thread was interupted");
         }
@@ -191,7 +189,7 @@ public class EmailClient {
      * Access a Dorset agent and process the email text
      *
      * @param text   the text sent to a Dorset agent
-     * @return the response from a Dorset agent
+     * @return reply   the response from a Dorset agent
      */
     private String processMessage(String text) {
         Agent agent = new DateTimeAgent();
