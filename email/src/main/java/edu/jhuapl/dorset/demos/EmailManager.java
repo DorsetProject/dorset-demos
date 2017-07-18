@@ -227,9 +227,11 @@ public class EmailManager {
      */
     public String readEmail(Message msg) throws MessagingException {
         Tokenizer tokenizer = new WhiteSpaceTokenizer();
+        if (msg.getSubject() == null) {
+            return getBodyText(msg);
+        }
         String subject = msg.getSubject().toUpperCase();
         String[] subjectTokenized = tokenizer.tokenize(subject);
-
         if (subject.contains("RE: ") || subjectTokenized.length <= 1) {
             return getBodyText(msg);
         } else {
@@ -280,12 +282,11 @@ public class EmailManager {
             replyMsg.setText(response);
             replyMsg.setReplyTo(msg.getReplyTo());
 
-            if (!msg.getSubject().toUpperCase().contains("RE: ")) {
+            if (msg.getSubject() != null && !msg.getSubject().toUpperCase().contains("RE: ")) {
                 replyMsg.setSubject("Re: " + replyMsg.getSubject());
             } else {
                 replyMsg.setSubject(msg.getSubject());
             }
-
             Transport transport = session.getTransport(SMTP);
             try {
                 transport.connect(username, password);

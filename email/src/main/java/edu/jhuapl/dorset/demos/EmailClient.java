@@ -39,9 +39,9 @@ public class EmailClient {
 
     private static final String CONSUMER_THREAD_COUNT_KEY = "consumerThreads";
 
-    private EmailManager manager;
-    private EmailQueue emailQueue;
     private String consumerThreads;
+    private EmailQueue emailQueue;
+    private EmailManager manager;
     private Application app;
 
     /**
@@ -57,7 +57,10 @@ public class EmailClient {
             System.err.println("Check your network connection and account/server configurations. Quitting now.");
             System.exit(-1);
         }
-        
+        Agent agent = new DateTimeAgent();
+        Router router = new SingleAgentRouter(agent);
+        app = new Application(router);
+
         EmailProducer producer = new EmailProducer(this);
         new Thread(producer).start();
         for (int n = 0; n < getConsumerThreadCount(); n++) {
@@ -68,7 +71,7 @@ public class EmailClient {
 
     /**
      * Main method in Email Client
-     * 
+     *
      * @param args   command line arguments
      */
     public static void main(String[] args) {
@@ -86,7 +89,7 @@ public class EmailClient {
         try {
             consumerThreadCount = Integer.parseInt(consumerThreads);
         } catch (NumberFormatException e) {
-            logger.error("Invalid configuration set for consumerThreads. Must be an integer. " + e);
+            logger.error("Invalid configuration set for consumerThreads. Must be an integer. Defaulting to one. " + e);
             consumerThreadCount = 1;
         }
         return consumerThreadCount;
@@ -137,10 +140,10 @@ public class EmailClient {
     /**
      * Log and output an error message
      *
-     * @param e   the exception thrown
+     * @param exception   the exception thrown
      */
     private void logAndOutputError(MessagingException exception) {
-        logger.error("Could not process email. ", exception);
+        logger.error("Failed to process email due to ", exception.getMessage());
         System.err.println(exception.getMessage() + " Check your network connection. Quitting now.");
         System.exit(-1);
     }
@@ -157,11 +160,11 @@ public class EmailClient {
     }
 
     /**
-     * Handle seen messages
+     * Handle seen message
      */
-    public synchronized void handleSeenMesage() {
+    public synchronized void handleSeenMessage() {
         try {
-            if (manager.getCount(FolderType.INBOX) > 0) {
+            if (manager.getCount(FolderType.INBOX) > 0 && !emailQueue.isEmpty()) {
                 getAndReplyToEmail();
             }
             waitThread();
@@ -176,13 +179,12 @@ public class EmailClient {
      * @throws MessagingException   if email could not be processed
      */
     private void getAndReplyToEmail() throws MessagingException {
-        if (emailQueue.removeMessageIfAny()) {
-            Message msg = manager.getSeenMessage(FolderType.INBOX);
-            String text = manager.readEmail(msg);
-            manager.sendMessage(processMessage(text), msg);
-            manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
-            manager.deleteEmail(FolderType.INBOX, msg);
-        }
+        emailQueue.removeMessageIfAny();
+        Message msg = manager.getSeenMessage(FolderType.INBOX);
+        String text = manager.readEmail(msg);
+        manager.sendMessage(processMessage(text), msg);
+        manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
+        manager.deleteEmail(FolderType.INBOX, msg);
     }
 
     /**
@@ -192,9 +194,6 @@ public class EmailClient {
      * @return reply   the response from a Dorset agent
      */
     private String processMessage(String text) {
-        Agent agent = new DateTimeAgent();
-        Router router = new SingleAgentRouter(agent);
-        app = new Application(router);
         Request request = new Request(text);
         Response response = app.process(request);
         String reply = response.getText();

@@ -37,30 +37,24 @@ public class EmailQueue {
      *
      * @param msg   the message to be put into the queue
      */
-    public synchronized void putMessage(Message msg) {
+    public void putMessage(Message msg) {
         messages.add(msg);
     }
 
     /**
      * Take a message off the queue
      * 
-     * @return whether there was a message to remove
      */
-    public synchronized boolean removeMessageIfAny() {
-        if (!messages.isEmpty()) {
-            messages.remove();
-            return true;
-        } else {
-            return false;
-        }
+    public void removeMessageIfAny() {
+        messages.remove();
     }
 
     /**
      * Return whether the queue is empty or not
      *
-     * @return boolean value
+     * @return whether the queue is empty or not
      */
-    public synchronized boolean isEmpty() {
+    public boolean isEmpty() {
         return messages.isEmpty();
     }
 }

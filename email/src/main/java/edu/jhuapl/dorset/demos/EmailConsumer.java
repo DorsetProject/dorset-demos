@@ -34,7 +34,7 @@ public class EmailConsumer implements Runnable {
      */
     public void run() {
         while (true) {
-            client.handleSeenMesage();
+            client.handleSeenMessage();
         }
     }
 }
