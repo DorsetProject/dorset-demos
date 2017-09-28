@@ -37,22 +37,25 @@ import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValue;
 
+import edu.jhuapl.dorset.nlp.Tokenizer;
+import edu.jhuapl.dorset.nlp.WhiteSpaceTokenizer;
+
 public class EmailManager {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(EmailManager.class);
-    
+
     private static final String USERNAME_KEY = "username";
     private static final String PASSWORD_KEY = "password";
     private static final String MAIL_STORE_TYPE_KEY = "mailStoreType";
     private static final String HOST_KEY = "host";
     private static final String FROM_KEY = "from";
 
-    private String user;
+    private String username;
     private String password;
     private String mailStoreType;
     private String host;
     private String from;
-    
+
     private Session session;
     private Store store;
     private Folder inboxFolder;
@@ -65,15 +68,15 @@ public class EmailManager {
 
     /**
     * EmailManager Constructor.
-    * 
+    *
     * The close method must be called on every EmailManager object before exiting an application
-    * 
+    *
     * @param config  Configuration object that stores mail server information, username, and password
     * @throws MessagingException   if connection cannot be established
     */
     public EmailManager(Config config) throws MessagingException {
         
-        user = config.getString(USERNAME_KEY);
+        username = config.getString(USERNAME_KEY);
         password = config.getString(PASSWORD_KEY);
         mailStoreType = config.getString(MAIL_STORE_TYPE_KEY);
         host = config.getString(HOST_KEY); 
@@ -82,9 +85,9 @@ public class EmailManager {
         session = Session.getDefaultInstance(prop);
         store = session.getStore(mailStoreType);
         try {
-            store.connect(host, user, password);
+            store.connect(host, username, password);
         } catch (MessagingException e) {
-            throw new MessagingException("Failed to set up imap connection", e);
+            throw new MessagingException("Failed to set up imap connection. Check your network connection and account/server configurations.", e);
         }
         try {
             initFolders();
@@ -97,7 +100,7 @@ public class EmailManager {
     
     /**
      * Extract properties from configuration object
-     * 
+     *
      * @param config  Configuration object that stores mail server information, username, and password
      * @return the properties file
      */
@@ -105,9 +108,10 @@ public class EmailManager {
         Properties prop = new Properties();
         for (java.util.Map.Entry<java.lang.String, ConfigValue> entry : config.entrySet()) {
             prop.setProperty(entry.getKey(), config.getString(entry.getKey()));
-        }        
+        }
         return prop;
     }
+
     /**
      * Get folders and create them if they do not already exist
      *
@@ -127,7 +131,7 @@ public class EmailManager {
 
     /**
      * Get a folder
-     * 
+     *
      * @param folder   the folder to be returned
      * @return the folder to be accessed
      */
@@ -145,42 +149,68 @@ public class EmailManager {
 
     /**
      * Get the number of emails in a folder
-     * 
+     *
      * @param folder   the folder to look in
      * @return the number of emails left in the folder
      * @throws MessagingException   if folder contents cannot be accessed
      */
-    public int getCount(FolderType folder) throws MessagingException {
+    public synchronized int getCount(FolderType folder) throws MessagingException {
         try {
             return getFolder(folder).getMessageCount();
         } catch (MessagingException e) {
             throw new MessagingException("Failed to access " + folder + " folder contents", e);
         }
     }
-    
+
     /**
-     * Get an email from a folder
-     * 
+     * Get a seen email from a folder
+     *
      * @param folder   the folder to retrieve an email from
      * @return the email
      * @throws MessagingException   if email cannot be retrieved
      */
-    public Message getMessage(FolderType folder) throws MessagingException {
+    public synchronized Message getSeenMessage(FolderType folder) throws MessagingException {
         try {
             return getFolder(folder).getMessage(1);
         } catch (MessagingException e) {
             throw new MessagingException("Failed to retrieve email from " + folder + " folder", e);
         }  
     }
-    
+
+    /**
+     * Get an unseen email from a folder
+     *
+     * @param folder   the folder to retrieve an email from
+     * @return the email
+     * @throws MessagingException   if email cannot be retrieved
+     * @throws IndexOutOfBoundsException   if there are no unseen emails
+     */
+    public synchronized Message getUnseenMessage(FolderType folder) throws IndexOutOfBoundsException, MessagingException {
+        try {    
+            int count = 1;
+            Message msg = getFolder(folder).getMessage(count);
+            while (msg.isSet(Flags.Flag.SEEN)) {
+                count++;
+                if (count > getFolder(folder).getMessageCount()) {
+                    throw new IndexOutOfBoundsException("There were no unseen messages in " + folder + " folder");
+                }
+                msg = getFolder(folder).getMessage(count);
+            }
+            return msg;
+        } catch (IndexOutOfBoundsException e) {
+            throw new IndexOutOfBoundsException("There were no unseen messages in " + folder + " folder");
+        } catch (MessagingException e) {
+            throw new MessagingException("Failed to retrieve email from " + folder + " folder", e);
+        } 
+    }
+
     /**
      * Mark an email as seen
-     * 
+     *
      * @param msg  the email to be marked seen
      * @throws MessagingException   if email cannot be properly marked
      */
-    //not currently being used, but may be needed for threading
-    public void markSeen(Message msg) throws MessagingException {
+    public synchronized void markSeen(Message msg) throws MessagingException {
         try {
             msg.setFlag(Flags.Flag.SEEN, true);
         } catch (MessagingException e) {
@@ -190,23 +220,33 @@ public class EmailManager {
 
     /**
      * Retrieve and return text from an email
-     * 
+     *
      * @param msg   the email to be read
-     * @return the text the email
+     * @return the text of an email
      * @throws MessagingException   if email cannot be accessed
      */
     public String readEmail(Message msg) throws MessagingException {
-        return getText(msg);
+        Tokenizer tokenizer = new WhiteSpaceTokenizer();
+        if (msg.getSubject() == null) {
+            return getBodyText(msg);
+        }
+        String subject = msg.getSubject().toUpperCase();
+        String[] subjectTokenized = tokenizer.tokenize(subject);
+        if (subject.contains("RE: ") || subjectTokenized.length <= 1) {
+            return getBodyText(msg);
+        } else {
+            return subject;
+        }
     }
 
     /**
-     * Get the text of an email
-     * 
+     * Get the text of an email body
+     *
      * @param part   the email body to be retrieved
      * @return text  the text of the email
      * @throws MessagingException   if email body cannot be retrieved
      */
-    private String getText(Part part) throws MessagingException {
+    private String getBodyText(Part part) throws MessagingException {
         try {
             String text = "";
             if (part.isMimeType(TEXT_PLAIN)) {
@@ -215,10 +255,10 @@ public class EmailManager {
                 Multipart mp = (Multipart) part.getContent();
                 int count = mp.getCount();
                 for (int n = 0; n < count; n++) {
-                    text += (getText(mp.getBodyPart(n)));
+                    text += (getBodyText(mp.getBodyPart(n)));
                 }
             } else if (part.isMimeType(ENCAPSULATED)) {
-                text += getText((Part) part.getContent());
+                text += getBodyText((Part) part.getContent());
             }
             logger.info("email reads: " + text);
             return text;
@@ -242,9 +282,14 @@ public class EmailManager {
             replyMsg.setText(response);
             replyMsg.setReplyTo(msg.getReplyTo());
 
+            if (msg.getSubject() != null && !msg.getSubject().toUpperCase().contains("RE: ")) {
+                replyMsg.setSubject("Re: " + replyMsg.getSubject());
+            } else {
+                replyMsg.setSubject(msg.getSubject());
+            }
             Transport transport = session.getTransport(SMTP);
             try {
-                transport.connect(user, password);
+                transport.connect(username, password);
                 transport.sendMessage(replyMsg, replyMsg.getAllRecipients());
             } finally {
                 transport.close();
@@ -256,7 +301,7 @@ public class EmailManager {
 
     /**
      * Copy an email from one folder to another
-     * 
+     *
      * @param fromFolder   the folder the email is currently located in
      * @param toFolder   the folder the email is going to be moved to
      * @param msg   the email to be moved
@@ -273,7 +318,7 @@ public class EmailManager {
 
     /**
      * Delete an email from a folder
-     * 
+     *
      * @param folder   the folder the email should be deleted from
      * @param msg   the email to be deleted
      */

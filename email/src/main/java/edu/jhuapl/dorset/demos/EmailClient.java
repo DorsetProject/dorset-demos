@@ -36,86 +36,162 @@ import edu.jhuapl.dorset.routing.SingleAgentRouter;
 public class EmailClient {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailClient.class);
+
+    private static final String CONSUMER_THREAD_COUNT_KEY = "consumerThreads";
+
+    private String consumerThreads;
+    private EmailQueue emailQueue;
     private EmailManager manager;
     private Application app;
 
     /**
-     * EmailClient
-     *
-     * @param manager   EmailManager object
+     * Create an EmailClient
      */
-    public EmailClient(EmailManager manager) {
-        this.manager = manager;
+    public EmailClient() {
+        Config config = ConfigFactory.load();
+        consumerThreads = config.getString(CONSUMER_THREAD_COUNT_KEY);
+        emailQueue = new EmailQueue();
+        try {
+            manager = new EmailManager(config);
+        } catch (MessagingException e) {
+            System.err.println("Check your network connection and account/server configurations. Quitting now.");
+            System.exit(-1);
+        }
         Agent agent = new DateTimeAgent();
         Router router = new SingleAgentRouter(agent);
         app = new Application(router);
+
+        EmailProducer producer = new EmailProducer(this);
+        new Thread(producer).start();
+        for (int n = 0; n < getConsumerThreadCount(); n++) {
+            EmailConsumer consumer = new EmailConsumer(this);
+            new Thread(consumer).start();
+        }
     }
 
     /**
      * Main method in Email Client
-     * 
+     *
      * @param args   command line arguments
      */
     public static void main(String[] args) {
-        Config config = ConfigFactory.load();
-        EmailClient client = null;
-        try {
-            client = new EmailClient(new EmailManager(config));
-        } catch (MessagingException e) {
-            System.err.println("Could not connect to server. Check your network connection and account/server configurations. Quitting now.");
-            System.exit(-1);
-        }
-        try {
-            client.run();
-        } catch (MessagingException e) {
-            System.err.println("An error occured while processing emails. Check your network connection. Quitting now.");
-        }
-        client.close();
+        System.out.println("Running the Email Client. Press Control-C to quit. ");
+        new EmailClient();
     }
 
     /**
-     * Process and respond to emails
+     * Parse String consumerThreads into an integer
      *
-     * @throws MessagingException   if errors occur while processing email
+     * @return consumerThreadCount   the number of consumer threads to be created
      */
-    private void run() throws MessagingException {
-
+    private int getConsumerThreadCount() {
+        int consumerThreadCount;
         try {
-            System.out.println("Running the Email Client. Press Control-C to quit. \nMessages in Inbox: " + manager.getCount(FolderType.INBOX));
-            while (true) {
-                if (manager.getCount(FolderType.INBOX) > 0) {
-                    logger.info("Inbox contains " + manager.getCount(FolderType.INBOX) + " messages");
-                }
-                while (manager.getCount(FolderType.INBOX) > 0) {
-                    Message msg = manager.getMessage(FolderType.INBOX);
-                    String text = manager.readEmail(msg);
-                    manager.sendMessage(processMessage(text), msg);
-                    manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
-                    manager.deleteEmail(FolderType.INBOX, msg);
-                }
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException exception) {
-                    logger.error("Thread was interrupted");
-                }
-            }
-        } catch (MessagingException  e) {
-            throw new MessagingException("Fatal error has occured. Quitting now.", e);
+            consumerThreadCount = Integer.parseInt(consumerThreads);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid configuration set for consumerThreads. Must be an integer. Defaulting to one. " + e);
+            consumerThreadCount = 1;
+        }
+        return consumerThreadCount;
+    }
+
+    /**
+     * Print number of messages in inbox
+     */
+    public void printNumberOfMessages() {
+        try {
+            System.out.println("\nMessages in Inbox: " + manager.getCount(FolderType.INBOX));
+        } catch (MessagingException e) {
+            logAndOutputError(e);
         }
     }
 
     /**
-     * Close EmailManager objects
+     * Handle unseen messages
      */
-    private void close() {
-        manager.close();  
+    public synchronized void handleUnseenMessage() {
+        try {
+            if (manager.getCount(FolderType.INBOX) > 0 && hasUnseenMessages()) {
+                emailQueue.putMessage(manager.getUnseenMessage(FolderType.INBOX));
+                manager.markSeen(manager.getUnseenMessage(FolderType.INBOX));
+            }
+            waitThread();
+        } catch (MessagingException e) {
+            logAndOutputError(e);
+        }
+    }
+
+    /**
+     * Returns whether the inbox has unseen messages
+     *
+     * @return whether the inbox has unseen messages
+     */
+    private boolean hasUnseenMessages() {
+        try {
+            manager.getUnseenMessage(FolderType.INBOX);
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        } catch (MessagingException e) {
+            return true;
+        }
+        return true;
+    }
+
+    /**
+     * Log and output an error message
+     *
+     * @param exception   the exception thrown
+     */
+    private void logAndOutputError(MessagingException exception) {
+        logger.error("Failed to process email due to ", exception.getMessage());
+        System.err.println(exception.getMessage() + " Check your network connection. Quitting now.");
+        System.exit(-1);
+    }
+
+    /**
+     * Wait thread
+     */
+    public void waitThread() {
+        try {
+            wait(500);
+        } catch (InterruptedException e) {
+            logger.info("Thread was interupted");
+        }
+    }
+
+    /**
+     * Handle seen message
+     */
+    public synchronized void handleSeenMessage() {
+        try {
+            if (manager.getCount(FolderType.INBOX) > 0 && !emailQueue.isEmpty()) {
+                getAndReplyToEmail();
+            }
+            waitThread();
+        } catch (MessagingException  e) {
+            logAndOutputError(e);
+        }
+    }
+
+    /**
+     * Get and reply to an email
+     *
+     * @throws MessagingException   if email could not be processed
+     */
+    private void getAndReplyToEmail() throws MessagingException {
+        emailQueue.removeMessageIfAny();
+        Message msg = manager.getSeenMessage(FolderType.INBOX);
+        String text = manager.readEmail(msg);
+        manager.sendMessage(processMessage(text), msg);
+        manager.copyEmail(FolderType.INBOX, FolderType.COMPLETE, msg);
+        manager.deleteEmail(FolderType.INBOX, msg);
     }
 
     /**
      * Access a Dorset agent and process the email text
      *
      * @param text   the text sent to a Dorset agent
-     * @return the response from a Dorset agent
+     * @return reply   the response from a Dorset agent
      */
     private String processMessage(String text) {
         Request request = new Request(text);
