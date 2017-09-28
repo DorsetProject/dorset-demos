@@ -36,11 +36,17 @@ This is a python server that uses kaldi to translate audio it receives over webs
 
 Install instructions at ```https://github.com/alumae/kaldi-gstreamer-server```
 
+Run download-tedlium-nnet2.sh in 'test/models' to download the model.
+You may need to change the download script to ignore certificate errors.
+
 ## gstreamer online neural net decoder plugin
 
 According to [this section](https://github.com/alumae/kaldi-gstreamer-server#using-the-kaldinnet2onlinedecoder-based-worker), in order to use the neural net decoder with the gstreamer server, you have to compile a special plugin for streamer.
 
 Repo found at ```https://github.com/alumae/gst-kaldi-nnet2-online```
+
+You will likely need to install the dev libraries for gstreamer and libjansson.
+Both `make depend` and `make` will require that KALDI_ROOT is set.
 
 # Running the backend
 
