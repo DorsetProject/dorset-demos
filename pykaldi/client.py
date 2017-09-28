@@ -1,10 +1,24 @@
+from __future__ import print_function
 import argparse
-import urllib.parse
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode
 import json
 import time
 import requests
 from ws4py.client.threadedclient import WebSocketClient
 import pyaudio
+import sys
+from functools import partial
+
+if sys.version_info < (3, 0):
+    # Python 2 version of print with flush
+    def echo(text):
+        sys.stdout.write(u'{}\r'.format(text))
+        sys.stdout.flush()
+else:
+    echo = partial(print, end='\r', flush=True)
 
 
 class KaldiClient(WebSocketClient):
@@ -37,7 +51,7 @@ class KaldiClient(WebSocketClient):
         Simple override of the base class connect to make this call blocking.
         :return: None
         """
-        super().connect()
+        super(KaldiClient, self).connect()
         while not self.connected:
             time.sleep(0.5)
 
@@ -93,10 +107,10 @@ class KaldiClient(WebSocketClient):
 def main():
     parser = argparse.ArgumentParser(
         description='command line client for sending audio to a kaldi-gstreamer-server')
-    parser.add_argument('kaldi_server', default='localhost:8888',
-                        help='address of server that does speech to text. Default=localhost:8888')
-    parser.add_argument('dorset_server', default="localhost:8888",
-                        help='address of server that answers requests. Default=localhost:8888')
+    parser.add_argument('kaldi_server', default='localhost:8989',
+                        help='address of server that does speech to text. Default=localhost:8989')
+    parser.add_argument('dorset_server', default="http://localhost:8888",
+                        help='address of server that answers requests. Default=http://localhost:8888')
     parser.add_argument('--rate', required=False, default=16000, help='rate of the audio. Default=16000')
     args = parser.parse_args()
 
@@ -106,7 +120,7 @@ def main():
     content_type += 'format=(string)S16LE,'
     content_type += 'channels=(int)1'
 
-    speech_recognition_url = 'ws://{}/client/ws/speech?{}'.format(args.kaldi_server, urllib.parse.urlencode(
+    speech_recognition_url = 'ws://{}/client/ws/speech?{}'.format(args.kaldi_server, urlencode(
         [("content-type", content_type)]))
 
     exit_phrases = ['quit', 'exit', 'stop listening']
@@ -122,7 +136,7 @@ def main():
             print('Answer: {}'.format(response['text'].lstrip()))
 
     def print_partial_transcription(text):
-        print(text, end='\r', flush=True)
+        echo(text)
 
     kaldi_client = KaldiClient(speech_recognition_url, args.rate,
                                recognition_callback=request_answer,

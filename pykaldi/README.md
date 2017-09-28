@@ -52,12 +52,12 @@ I used this bash script to run all the needed things for the server:
 rm *.out
 
 # run the server
-nohup python kaldigstserver/master_server.py --port=8888 > server.out &
+nohup python kaldigstserver/master_server.py --port=8989 > server.out &
 
 # run a decoding worker
 # **NOTE**: you'll have to fill out the path in the export on the next line
 export GST_PLUGIN_PATH=<path to gst-kaldi-nnet2-online>/src
-nohup python kaldigstserver/worker.py -u ws://localhost:8888/worker/ws/speech -c sample_english_nnet2.yaml > worker.out &
+nohup python kaldigstserver/worker.py -u ws://localhost:8989/worker/ws/speech -c sample_english_nnet2.yaml > worker.out &
 ```
 
 This will run the server & 1 worker, which is what the server hands off the audio to to do the speech recognition.
